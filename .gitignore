@@ -1,0 +1,8 @@
+static/
+obj/
+packages/
+node_modules/
+bin/
+build/
+.paket/
+.fake/
