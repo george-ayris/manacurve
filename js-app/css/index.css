@@ -1,0 +1,26 @@
+.bar rect {
+  fill: steelblue;
+}
+
+.bar.mouseover rect {
+  fill: green;
+}
+
+.bar.clicked rect {
+  fill: red;
+}
+
+.bar text, .axis text {
+  font: 10px sans-serif;
+}
+
+.axis line, .axis path {
+  fill: none;
+  stroke: steelblue;
+  shape-rendering: crispEdges;
+}
+
+text.title {
+  font: 14px sans-serif;
+  text-anchor: middle;
+}
