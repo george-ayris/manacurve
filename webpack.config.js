@@ -15,7 +15,7 @@ var common = {
   entry: PATHS.app,
   output: {
     path: PATHS.build,
-    filename: 'static/bundle.js'
+    filename: 'bundle.js'
   },
   resolve: {
     extensions: ['', '.js', '.jsx']
