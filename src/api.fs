@@ -35,6 +35,15 @@ module ApiHelpers =
   let fromJson<'a> json =
     JsonConvert.DeserializeObject(json, typeof<'a>) :?> 'a
 
+  let fromJsonTripleNestedList json =
+    let tripleList = JsonConvert.DeserializeObject(json, typeof<float list list list>) :?> float list list list
+    let round x = int (System.Math.Round(x : float))
+    let listToTuple = function
+      | x::y::[] -> (round x,y)
+      | x -> raise (System.ArgumentException(x.ToString() + " is of the wrong form."))
+    List.map (List.map listToTuple) tripleList
+
+
 module Redis =
   open ApiHelpers
 
@@ -53,12 +62,9 @@ module Redis =
   let saveValue key value =
     redis().SetValue(key, toJson value)
 
-  let checkCacheAndReact keyFunction valueFunction n =
+  let checkCacheAndReact keyFunction deserialiser valueFunction n =
     let r = redis()
     let key = keyFunction n
-
-    let getValue key = r.GetValue(key) |> fromJson
-    let getSimulationResults() = getValue (monoKey n)
 
     let deleteMonoKey =
       (if r.ContainsKey(otherKey key n)
@@ -72,12 +78,18 @@ module Redis =
     if r.ContainsKey(key)
     then
       LogLine.info ("Cache hit for " + key) |> logger.Log
-      getValue key
+      deserialiser (r.GetValue(key))
     else
       LogLine.info ("Cache miss for " + key) |> logger.Log
-      let value = valueFunction (getSimulationResults())
+      let value = valueFunction (fromJson (r.GetValue(monoKey n)))
       cache value
       value
+
+  let averagesCheckCacheAndReact : int -> float list =
+    checkCacheAndReact monoAveragesKey fromJson averageLandsPerTurn
+
+  let distributionsCheckCacheAndReact : int -> (int * float) list list =
+    checkCacheAndReact monoDistributionsKey fromJsonTripleNestedList landDistributionsPerTurn
 
 module Monodeck =
   open ApiHelpers
@@ -91,13 +103,12 @@ module Monodeck =
 
   type AverageLands = { averages: float list }
   let averageLands n =
-    let averages = checkCacheAndReact monoAveragesKey averageLandsPerTurn n
+    let averages = averagesCheckCacheAndReact n
     { averages = averages }
 
   type Distributions = { distributions: (int * float) list list }
   let landDistributions n =
-    let distributions =
-      checkCacheAndReact monoDistributionsKey landDistributionsPerTurn n
+    let distributions = distributionsCheckCacheAndReact n
     { distributions =  distributions }
 
   let endpoints =
