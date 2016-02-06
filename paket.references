@@ -1,2 +1,5 @@
 Suave
 Newtonsoft.Json
+ServiceStack.Redis
+Logary
+Logary.Adapters.Suave

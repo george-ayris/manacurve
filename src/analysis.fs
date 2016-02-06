@@ -7,20 +7,21 @@ module Analysis =
   let simulationCount = 10000
   let numberOfTurns = 10
 
-  let applyAnalysis f deck =
+  let simulateGames deck =
     let landsInPlay = (fun (s : PlayerState) -> s.lands) >> numberOfLands
     let deckToLandsInPlay = deckToPlayedGame numberOfTurns >> List.map landsInPlay
 
     List.replicate simulationCount deck
     |> List.map deckToLandsInPlay
-    |> transpose
-    |> List.map f
 
-  let averageLandsPerTurn deck =
+  let applyAnalysis f landsInPlay =
+    landsInPlay |> transpose |> List.map f
+
+  let averageLandsPerTurn simulationResults =
     let toAverageLands = List.averageBy float
-    applyAnalysis toAverageLands deck
+    applyAnalysis toAverageLands simulationResults
 
-  let landDistributionsPerTurn deck =
+  let landDistributionsPerTurn simulationResults =
     let addMissingTurnsAtTheStart = function
       | ((turn, landCount)::rest) as x ->
         let missingTuples = List.map (fun x -> (x, float 0)) [1..(turn-1)]
@@ -38,4 +39,4 @@ module Analysis =
       >> Seq.toList
       >> addMissingTurnsAtTheStart
 
-    applyAnalysis toLandDistribution deck
+    applyAnalysis toLandDistribution simulationResults

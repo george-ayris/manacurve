@@ -1,6 +1,3 @@
-#r "packages/Suave/lib/net40/Suave.dll"
-#load "src/api.fs"
-
 open Suave
 open Suave.Successful
 open Suave.RequestErrors
@@ -11,10 +8,10 @@ open Suave.Files
 open System.IO
 open Suave.Logging
 open Manacurve.Api
-
-#if INTERACTIVE
-Directory.SetCurrentDirectory("/Users/george/Documents/manacurve")
-#endif
+open Logary
+open Logary.Configuration
+open Logary.Targets
+open Logary.Adapters
 
 let app : WebPart =
   choose
@@ -24,8 +21,19 @@ let app : WebPart =
       NOT_FOUND ""]
 
 let homeFolder = Directory.GetCurrentDirectory() + "/static/"
-let config =
+
+[<EntryPoint>]
+let main argv =
+  use logary =
+    withLogary' "Manacurve" (
+      withRule (Rule.createForTarget "console")
+      >> withTarget (Console.create Console.empty "console")
+    )
+
+  let config =
     { defaultConfig with
-        logger = Loggers.saneDefaultsFor LogLevel.Info
+        logger = SuaveAdapter(logary.GetLogger "suave")
         homeFolder = Some homeFolder }
-startWebServer config app
+
+  startWebServer config app
+  0
