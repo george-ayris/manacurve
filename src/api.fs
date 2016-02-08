@@ -47,7 +47,7 @@ module ApiHelpers =
 module Redis =
   open ApiHelpers
 
-  let logger = Logging.getCurrentLogger ()
+  let logger = Logging.getLoggerByName "Manacurve"
 
   let monoKey n = "mono:" + n.ToString()
   let monoAveragesKey n = monoKey n + ":averages"
@@ -62,52 +62,73 @@ module Redis =
   let saveValue key value =
     redis().SetValue(key, toJson value)
 
-  let checkCacheAndReact keyFunction deserialiser valueFunction n =
+  let checkAnalysisCacheAndReact n =
+    let r = redis()
+    let key = monoAveragesKey n
+    if not (r.ContainsKey(key))
+    then
+      LogLine.info ("Simulation - cache miss for " + key) |> logger.Log
+      let deck = createMonoDeck n
+      let simulationResults = simulateGames deck
+      LogLine.info "Simulation - results created" |> logger.Log
+      saveValue (monoKey n) simulationResults
+      LogLine.info "Simulation - results saved" |> logger.Log
+      ()
+    else
+      LogLine.info ("Simulation - cache hit for " + key) |> logger.Log
+
+  let checkSimulationCacheAndReact keyFunction deserialiser valueFunction n =
     let r = redis()
     let key = keyFunction n
 
-    let deleteMonoKey =
+    let deleteMonoKey() =
       (if r.ContainsKey(otherKey key n)
-      then r.Remove(monoKey n)
-      else false) |> ignore
+      then
+        LogLine.info ("Delete - cache hit for " + (otherKey key n)) |> logger.Log
+        r.Remove(monoKey n)
+      else
+        LogLine.info ("Delete - cache miss for " + (otherKey key n)) |> logger.Log
+        false) |> ignore
 
     let cache value =
       r.SetValue(key, toJson value)
-      deleteMonoKey
+      deleteMonoKey()
 
     if r.ContainsKey(key)
     then
-      LogLine.info ("Cache hit for " + key) |> logger.Log
+      LogLine.info ("Request - cache hit for " + key) |> logger.Log
       deserialiser (r.GetValue(key))
     else
-      LogLine.info ("Cache miss for " + key) |> logger.Log
+      LogLine.info ("Request - cache miss for " + key) |> logger.Log
       let value = valueFunction (fromJson (r.GetValue(monoKey n)))
       cache value
       value
 
   let averagesCheckCacheAndReact : int -> float list =
-    checkCacheAndReact monoAveragesKey fromJson averageLandsPerTurn
+    checkSimulationCacheAndReact monoAveragesKey fromJson averageLandsPerTurn
 
   let distributionsCheckCacheAndReact : int -> (int * float) list list =
-    checkCacheAndReact monoDistributionsKey fromJsonTripleNestedList landDistributionsPerTurn
+    checkSimulationCacheAndReact monoDistributionsKey fromJsonTripleNestedList landDistributionsPerTurn
 
 module Monodeck =
   open ApiHelpers
   open Redis
 
+  let logger = Logging.getLoggerByName "Manacurve"
+
   let createDeckSimulations n =
-    let deck = createMonoDeck n
-    let simulationResults = simulateGames deck
-    saveValue ("mono:" + n.ToString()) simulationResults
+    checkAnalysisCacheAndReact n
     OK ""
 
   type AverageLands = { averages: float list }
   let averageLands n =
+    LogLine.info ("Request started - average lands " + n.ToString()) |> logger.Log
     let averages = averagesCheckCacheAndReact n
     { averages = averages }
 
   type Distributions = { distributions: (int * float) list list }
   let landDistributions n =
+    LogLine.info ("Request started - distributions " + n.ToString()) |> logger.Log
     let distributions = distributionsCheckCacheAndReact n
     { distributions =  distributions }
 

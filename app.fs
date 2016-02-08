@@ -26,7 +26,7 @@ let homeFolder = Directory.GetCurrentDirectory() + "/static/"
 let main argv =
   use logary =
     withLogary' "Manacurve" (
-      withRule (Rule.createForTarget "console")
+      withRules [ Rule.setLevel (LogLevel.Debug) (Rule.createForTarget "console") ]
       >> withTarget (Console.create Console.empty "console")
     )
 
