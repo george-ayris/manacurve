@@ -47,6 +47,12 @@ module ApiHelpers =
 module Redis =
   open ApiHelpers
 
+  let redisUrl =
+    let redisUrl = System.Environment.GetEnvironmentVariable("REDIS_URL")
+    if redisUrl = null
+    then "redis://localhost:6379"
+    else redisUrl
+
   let logger = Logging.getLoggerByName "Manacurve"
 
   let monoKey n = "mono:" + n.ToString()
@@ -57,7 +63,7 @@ module Redis =
     then monoDistributionsKey n
     else monoAveragesKey n
 
-  let redis() = new RedisClient("localhost")
+  let redis() = new RedisClient(redisUrl)
 
   let saveValue key value =
     redis().SetValue(key, toJson value)
