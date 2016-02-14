@@ -1,1 +1,1 @@
-web: mono manacurve.exe
+web: mono bin/Debug/manacurve.exe
