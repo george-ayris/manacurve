@@ -39,7 +39,7 @@ let main argv =
         logger = SuaveAdapter(logary.GetLogger "suave")
         homeFolder = Some homeFolder
         bindings=[ (if port = null then HttpBinding.mk HTTP ip127 (uint16 8080)
-                      else HttpBinding.mk HTTP ipZero (uint16 port)) ] }
+                      else HttpBinding.mk HTTP ip127 (uint16 port)) ] }
 
   startWebServer config app
   0
