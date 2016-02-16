@@ -55,10 +55,10 @@ module Redis =
   let encodeLandColours (l : DeckLandQuantities) = l.colour1 * 100 + l.colour2
   let simulationKey n = "simulation:" + (sprintf "%5i" n)
   let averagesKey n = simulationKey n + ":averages"
-  let distributionsKey n = simulationKey n + ":distributions"
+  let mostCommonLandsKey n = simulationKey n + ":mostcommon"
   let otherKey key n =
     if key = (averagesKey n)
-    then distributionsKey n
+    then mostCommonLandsKey n
     else averagesKey n
 
   let redis() = new RedisClient(redisUrl)
@@ -115,8 +115,8 @@ module Redis =
   let averagesCheckCacheAndReact =
     checkSimulationCacheAndReact averagesKey averageLandsPerTurn
 
-  let distributionsCheckCacheAndReact =
-    checkSimulationCacheAndReact distributionsKey mostCommonLandScenariosPerTurn
+  let mostCommonLandsCheckCacheAndReact =
+    checkSimulationCacheAndReact mostCommonLandsKey mostCommonLandScenariosPerTurn
 
 module Deck =
   open ApiHelpers
@@ -139,10 +139,10 @@ module Deck =
   type LandScenarioAndProbability = { landScenario: int list; probability: float }
   type MostCommonLandScenarios =
     { mostCommonLandScenarios: LandScenarioAndProbability list list }
-  let landDistributions n =
-    LogLine.info ("Request started - distributions " + n.ToString()) |> logger.Log
-    let distributions = distributionsCheckCacheAndReact n
-    match distributions with
+  let mostCommonLands n =
+    LogLine.info ("Request started - most common lands " + n.ToString()) |> logger.Log
+    let mostCommonLands = mostCommonLandsCheckCacheAndReact n
+    match mostCommonLands with
       | Some x ->
         let tupleToRecord = fun (scenario, probability) -> { landScenario=scenario; probability=probability}
         JSON { mostCommonLandScenarios =  List.map (List.map tupleToRecord) x }
@@ -155,4 +155,4 @@ module Deck =
         pathScan "/deck/%d/averages" (fun d ->
             GET >=> averageLands d)
         pathScan "/deck/%d/mostcommon" (fun d ->
-            GET >=> landDistributions d) ]
+            GET >=> mostCommonLands d) ]
