@@ -45,25 +45,46 @@ module Cards =
   open ListHelpers
   open Shuffle
 
-  type Card = Land | NonLand
+  type Land = Colour1 | Colour2
+  type Card = Land of Land | NonLand
   type PlayerState =
     { hand: Card list; deck: Card list; lands: Card list }
+  type DeckLandQuantities = { colour1: int; colour2: int }
 
   let deckSize = 60
   let startingHandSize = 7
 
   let createPlayerState deck = {hand=[]; deck=deck; lands=[]}
 
-  let createMonoDeck numberOfLands =
-    let lands = List.replicate numberOfLands Land
-    let nonLands = List.replicate (deckSize - numberOfLands) NonLand
-    lands @ nonLands
+  let createDeck landQuantities =
+    let lands1 = List.replicate landQuantities.colour1 (Land Colour1)
+    let lands2 = List.replicate landQuantities.colour2 (Land Colour2)
+    let nonLandQuantity = (deckSize - landQuantities.colour1 - landQuantities.colour2)
+    let nonLands = List.replicate nonLandQuantity NonLand
+    lands1 @ lands2 @ nonLands
 
   let isALand = function
-    | Land -> true
+    | (Land _) -> true
     | NonLand -> false
 
   let numberOfLands cards = (List.filter isALand cards).Length
+
+  let isColour1 = function
+    | Land(c) -> match c with
+                  | Colour1 -> true
+                  | Colour2 -> false
+    | NonLand -> false
+
+  let isColour2 = function
+    | Land(c) -> match c with
+                  | Colour1 -> false
+                  | Colour2 -> true
+    | NonLand -> false
+
+  let numberOfLandsByColour cards =
+    let c1 = (List.filter isColour1 cards).Length
+    let c2 = (List.filter isColour2 cards).Length
+    [c1; c2]
 
   let landsNotBetween l u hand =
     let landsInHand = numberOfLands hand
@@ -81,7 +102,7 @@ module Cards =
     {hand=hand; deck=deck; lands=l}
 
   let rec shuffleAndDrawHand handSize state =
-    let newState = drawHand startingHandSize {state with deck=shuffle state.deck}
+    let newState = drawHand handSize {state with deck=shuffle state.deck}
     if shouldMulligan newState.hand
     then shuffleAndDrawHand (handSize-1) state
     else newState

@@ -17,7 +17,7 @@ open System.Net
 let app : WebPart =
   choose
     [ path "/" >=> browseFileHome "index.html"
-      Monodeck.endpoints
+      Deck.endpoints
       browseHome
       NOT_FOUND ""]
 

@@ -21,7 +21,7 @@ module ApiHelpers =
   let toJson v =
     let jsonSerializerSettings = new JsonSerializerSettings()
     let converters = new System.Collections.Generic.List<JsonConverter>()
-    converters.Add(new TupleArrayConverter())
+    converters.Add(new TupleConverter())
     jsonSerializerSettings.Converters <- converters
     jsonSerializerSettings.ContractResolver <- new CamelCasePropertyNamesContractResolver()
 
@@ -35,13 +35,10 @@ module ApiHelpers =
   let fromJson<'a> json =
     JsonConvert.DeserializeObject(json, typeof<'a>) :?> 'a
 
-  let fromJsonTripleNestedList json =
-    let tripleList = JsonConvert.DeserializeObject(json, typeof<float list list list>) :?> float list list list
-    let round x = int (System.Math.Round(x : float))
-    let listToTuple = function
-      | x::y::[] -> (round x,y)
-      | x -> raise (System.ArgumentException(x.ToString() + " is of the wrong form."))
-    List.map (List.map listToTuple) tripleList
+  let getResourceFromReq<'a> (req : HttpRequest) =
+    let getString rawForm =
+      System.Text.Encoding.UTF8.GetString(rawForm)
+    req.rawForm |> getString |> fromJson<'a>
 
 
 module Redis =
@@ -55,35 +52,36 @@ module Redis =
 
   let logger = Logging.getLoggerByName "Manacurve"
 
-  let monoKey n = "mono:" + n.ToString()
-  let monoAveragesKey n = monoKey n + ":averages"
-  let monoDistributionsKey n = monoKey n + ":distributions"
+  let encodeLandColours (l : DeckLandQuantities) = l.colour1 * 100 + l.colour2
+  let simulationKey n = "simulation:" + (sprintf "%5i" n)
+  let averagesKey n = simulationKey n + ":averages"
+  let distributionsKey n = simulationKey n + ":distributions"
   let otherKey key n =
-    if key = (monoAveragesKey n)
-    then monoDistributionsKey n
-    else monoAveragesKey n
+    if key = (averagesKey n)
+    then distributionsKey n
+    else averagesKey n
 
   let redis() = new RedisClient(redisUrl)
 
-  let saveValue key value =
-    redis().SetValue(key, toJson value)
+  let saveValue (r : RedisClient) key value =
+    r.SetValue(key, toJson value)
 
-  let checkAnalysisCacheAndReact n =
+  let checkAnalysisCacheAndReact landColours =
     let r = redis()
-    let key = monoAveragesKey n
+    let key = averagesKey (encodeLandColours landColours)
     if not (r.ContainsKey(key))
     then
       LogLine.info ("Simulation - cache miss for " + key) |> logger.Log
-      let deck = createMonoDeck n
+      let deck = createDeck landColours
       let simulationResults = simulateGames deck
       LogLine.info "Simulation - results created" |> logger.Log
-      saveValue (monoKey n) simulationResults
+      saveValue r (simulationKey (encodeLandColours landColours)) simulationResults
       LogLine.info "Simulation - results saved" |> logger.Log
       ()
     else
       LogLine.info ("Simulation - cache hit for " + key) |> logger.Log
 
-  let checkSimulationCacheAndReact keyFunction deserialiser valueFunction n =
+  let checkSimulationCacheAndReact keyFunction valueFunction n =
     let r = redis()
     let key = keyFunction n
 
@@ -91,7 +89,7 @@ module Redis =
       (if r.ContainsKey(otherKey key n)
       then
         LogLine.info ("Delete - cache hit for " + (otherKey key n)) |> logger.Log
-        r.Remove(monoKey n)
+        r.Remove(simulationKey n)
       else
         LogLine.info ("Delete - cache miss for " + (otherKey key n)) |> logger.Log
         false) |> ignore
@@ -103,46 +101,58 @@ module Redis =
     if r.ContainsKey(key)
     then
       LogLine.info ("Request - cache hit for " + key) |> logger.Log
-      deserialiser (r.GetValue(key))
+      Some <| fromJson (r.GetValue(key))
     else
-      LogLine.info ("Request - cache miss for " + key) |> logger.Log
-      let value = valueFunction (fromJson (r.GetValue(monoKey n)))
-      cache value
-      value
+      if r.ContainsKey(simulationKey n)
+      then
+        LogLine.info ("Request - cache miss for " + key) |> logger.Log
+        let value = valueFunction (fromJson (r.GetValue(simulationKey n)))
+        cache value
+        Some value
+      else
+        None
 
-  let averagesCheckCacheAndReact : int -> float list =
-    checkSimulationCacheAndReact monoAveragesKey fromJson averageLandsPerTurn
+  let averagesCheckCacheAndReact =
+    checkSimulationCacheAndReact averagesKey averageLandsPerTurn
 
-  let distributionsCheckCacheAndReact : int -> (int * float) list list =
-    checkSimulationCacheAndReact monoDistributionsKey fromJsonTripleNestedList landDistributionsPerTurn
+  let distributionsCheckCacheAndReact =
+    checkSimulationCacheAndReact distributionsKey mostCommonLandScenariosPerTurn
 
-module Monodeck =
+module Deck =
   open ApiHelpers
   open Redis
 
   let logger = Logging.getLoggerByName "Manacurve"
 
-  let createDeckSimulations n =
-    checkAnalysisCacheAndReact n
+  let createDeckSimulations (landColours : DeckLandQuantities) =
+    checkAnalysisCacheAndReact landColours
     OK ""
 
-  type AverageLands = { averages: float list }
+  type AverageLands = { averages: float list list }
   let averageLands n =
     LogLine.info ("Request started - average lands " + n.ToString()) |> logger.Log
     let averages = averagesCheckCacheAndReact n
-    { averages = averages }
+    match averages with
+      | Some a -> JSON { averages = a }
+      | None -> NOT_FOUND "Simulation not done"
 
-  type Distributions = { distributions: (int * float) list list }
+  type LandScenarioAndProbability = { landScenario: int list; probability: float }
+  type MostCommonLandScenarios =
+    { mostCommonLandScenarios: LandScenarioAndProbability list list }
   let landDistributions n =
     LogLine.info ("Request started - distributions " + n.ToString()) |> logger.Log
     let distributions = distributionsCheckCacheAndReact n
-    { distributions =  distributions }
+    match distributions with
+      | Some x ->
+        let tupleToRecord = fun (scenario, probability) -> { landScenario=scenario; probability=probability}
+        JSON { mostCommonLandScenarios =  List.map (List.map tupleToRecord) x }
+      | None -> NOT_FOUND "Simulation not done"
 
   let endpoints =
     choose
-      [ pathScan "/monodeck/%d" (fun d ->
-          GET >=> createDeckSimulations d)
-        pathScan "/monodeck/%d/averages" (fun d ->
-            GET >=> JSON (averageLands d))
-        pathScan "/monodeck/%d/distributions" (fun d ->
-            GET >=> JSON (landDistributions d)) ]
+      [ path "/deck" >=> POST >=>
+          request (getResourceFromReq >> createDeckSimulations)
+        pathScan "/deck/%d/averages" (fun d ->
+            GET >=> averageLands d)
+        pathScan "/deck/%d/mostcommon" (fun d ->
+            GET >=> landDistributions d) ]

@@ -8,7 +8,7 @@ module Analysis =
   let numberOfTurns = 10
 
   let simulateGames deck =
-    let landsInPlay = (fun (s : PlayerState) -> s.lands) >> numberOfLands
+    let landsInPlay = (fun (s : PlayerState) -> s.lands) >> numberOfLandsByColour
     let deckToLandsInPlay = deckToPlayedGame numberOfTurns >> List.map landsInPlay
 
     List.replicate simulationCount deck
@@ -17,26 +17,22 @@ module Analysis =
   let applyAnalysis f landsInPlay =
     landsInPlay |> transpose |> List.map f
 
-  let averageLandsPerTurn simulationResults =
-    let toAverageLands = List.averageBy float
-    applyAnalysis toAverageLands simulationResults
+  let averageLandsPerTurn (simulationResults : int list list list) =
+    let toColour1Averages = List.averageBy (fun (lands : int list) -> float lands.[0])
+    let toColour2Averages = List.averageBy (fun (lands : int list) -> float lands.[1])
+    let colour1Averages = applyAnalysis toColour1Averages simulationResults
+    let colour2Averages = applyAnalysis toColour2Averages simulationResults
+    transpose [colour1Averages; colour2Averages]
 
-  let landDistributionsPerTurn simulationResults =
-    let addMissingTurnsAtTheStart = function
-      | ((turn, landCount)::rest) as x ->
-        let missingTuples = List.map (fun x -> (x, float 0)) [1..(turn-1)]
-        missingTuples @ x
-      | x -> x
-
-    let probabilityOfLand (xs: int seq) =
+  let mostCommonLandScenariosPerTurn simulationResults =
+    let probabilityOfLand xs =
         let count = Seq.length xs |> float
         count / (float simulationCount)
 
-    let toLandDistribution =
-      Seq.sort
-      >> (Seq.groupBy id)
-      >> Seq.map (fun (x, y) -> (x, probabilityOfLand y))
+    let toMostCommonLandScenarios =
+      (Seq.groupBy id)
+      >> Seq.map (fun (x,y) -> (x, probabilityOfLand y))
       >> Seq.toList
-      >> addMissingTurnsAtTheStart
+      >> List.sortBy (snd >> (fun x -> -x))
 
-    applyAnalysis toLandDistribution simulationResults
+    applyAnalysis toMostCommonLandScenarios simulationResults
