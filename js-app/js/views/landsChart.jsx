@@ -2,7 +2,7 @@ import React from 'react';
 import StackedBarChart from './stackedBarChart.jsx'
 import BarChart from './barChart.jsx'
 import Slider from './slider.jsx'
-import LandsStore from '../stores/LandsStore'
+import LandsStore from '../stores/landsStore'
 import LandsActions from '../actions/landsActionCreators'
 import Constants from '../constants'
 import Utils from '../utils/utils'
