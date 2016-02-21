@@ -6,5 +6,6 @@ export default {
       SIMULATION_DIDNT_START: "SIMULATION_DIDNT_START",
       ANALYSIS_ERROR: "ANALYSIS_ERROR"
   },
-  Debug: true
+  Debug: true,
+  Colours: ['Red', 'Blue']
 }

@@ -1,5 +1,18 @@
+import Constants from '../constants'
+import Utils from './utils'
+
+function zeroPad(n) {
+  var s = n+"";
+  while (s.length < 2) s = "0" + s;
+  return s;
+}
+
 function numberOfLandsToDeckId(numberOfLandsByColour) {
-  return parseInt(numberOfLandsByColour['Red']) * 100 + parseInt(numberOfLandsByColour['Blue']);
+  var createDeckId = (acc, colour) => {
+    var numberOfCurrentColour = zeroPad(numberOfLandsByColour[colour]);
+    return acc + numberOfCurrentColour;
+  };
+  return Constants.Colours.reduce(createDeckId, "")
 }
 
 export default {
@@ -7,10 +20,7 @@ export default {
     return $.ajax({
       type: "POST",
       url: "/deck",
-      data: JSON.stringify({
-        colour1: numberOfLandsByColour[0],
-        colour2: numberOfLandsByColour[1]
-      }),
+      data: JSON.stringify(Utils.createApiColoursObject(numberOfLandsByColour)),
       contentType: "application/json; charset=utf-8"
     });
   },

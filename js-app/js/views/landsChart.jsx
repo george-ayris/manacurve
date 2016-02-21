@@ -4,6 +4,8 @@ import BarChart from './barChart.jsx'
 import Slider from './slider.jsx'
 import LandsStore from '../stores/LandsStore'
 import LandsActions from '../actions/landsActionCreators'
+import Constants from '../constants'
+import Utils from '../utils/utils'
 
 const LandsChart = React.createClass({
   getInitialState: LandsStore.getState,
@@ -30,9 +32,10 @@ const LandsChart = React.createClass({
   },*/
 
   colourSliderChanged(colour, newValue) {
-    var copy = this.state.numberOfEachColour.slice(0);
-    copy[colour] = newValue;
-    LandsActions.updateNumberOfLands(copy);
+    var copyOfNumberOfEachColour = Utils.createColoursObject(this.state.numberOfEachColour);
+    copyOfNumberOfEachColour[colour] = parseInt(newValue);
+    console.log('Updating lands to ', copyOfNumberOfEachColour);
+    LandsActions.updateNumberOfLands(copyOfNumberOfEachColour);
   },
 
   /*updateData(numberOfLands) {
@@ -83,12 +86,12 @@ const LandsChart = React.createClass({
         sliderValue={self.state.numberOfEachColour[colour]}
         label={colour}
         sliderChanged={n => { return self.colourSliderChanged(colour, n); }}
+        key={colour}
       />;
     };
 
     var sliders = <div>
-      {makeSlider('Red')}
-      {makeSlider('Blue')}
+      {Constants.Colours.map(x => { return makeSlider(x); })}
     </div>;
     if (this.state.numberOfSimulationsRunning === 0) {
 

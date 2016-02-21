@@ -9,7 +9,7 @@ const Slider = React.createClass({
   },
   getInitialState() {
     return {
-      previousValue: this.props.value
+      previousValue: this.props.sliderValue
     };
   },
   handleChange(event) {
@@ -28,8 +28,8 @@ const Slider = React.createClass({
     return (
       <div>
         <label htmlFor="range">{this.props.label}</label>
-        <input type="range" id="range" min="0" value={this.props.sliderValue} onChange={this.handleChange} max="60" step="1" />
-        <output htmlFor="range">{this.props.sliderValue}</output>
+        <input type="range" id="range" min="0" value={this.state.previousValue} onChange={this.handleChange} max="60" step="1" />
+        <output htmlFor="range">{this.state.previousValue}</output>
       </div>
     );
   }
