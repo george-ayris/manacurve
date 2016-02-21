@@ -1,16 +1,16 @@
-.bar rect {
+.row rect {
   fill: steelblue;
 }
 
-.bar.mouseover rect {
+.row.mouseover rect {
   fill: green;
 }
 
-.bar.clicked rect {
+.row.clicked rect {
   fill: red;
 }
 
-.bar text, .axis text {
+.row text, .axis text {
   font: 10px sans-serif;
 }
 

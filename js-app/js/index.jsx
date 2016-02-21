@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import '../css/index.css';
-import AverageLandsChart from './averageLandsChart.jsx'
+import LandsChart from './views/landsChart.jsx'
 
 const app = document.createElement('div');
 document.body.appendChild(app);
-ReactDOM.render(<AverageLandsChart />, app);
+ReactDOM.render(<LandsChart />, app);

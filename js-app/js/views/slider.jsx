@@ -1,8 +1,10 @@
 import React from 'react';
 
+// TODO: Consider removing state from here
 const Slider = React.createClass({
   propTypes: {
-    sliderChanged: React.PropTypes.func.isRequired
+    sliderChanged: React.PropTypes.func.isRequired,
+    manaColour: React.PropTypes.string.isRequired
   },
   getInitialState: function() {
     return {
@@ -25,7 +27,7 @@ const Slider = React.createClass({
   render: function() {
     return (
       <div>
-        <label htmlFor="range">Number of Lands</label>
+        <label htmlFor="range">Number {this.props.manaColour} of Lands</label>
         <input type="range" id="range" min="0" value={this.state.value} onChange={this.handleChange} max="60" step="1" />
         <output htmlFor="range">{this.state.value}</output>
       </div>

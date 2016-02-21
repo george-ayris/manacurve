@@ -10,8 +10,14 @@ export default function(chartNode, data, options) {
     chartHeight = options.barHeight * data.length,
     height = chartHeight + margin.top + margin.bottom;
 
+  data.forEach(d => {
+    var x0 = 0;
+    d.bars = d.map(x => { return { x0: x0, x1: x0 += x } });
+    d.total = x0;
+  });
+
   var x = d3.scale.linear()
-    .domain([0, d3.max(data)])
+    .domain([0, d3.max(data, d => { return d.total; })])
     .range([0, chartWidth]);
 
   var y = d3.scale.ordinal()
@@ -48,47 +54,51 @@ export default function(chartNode, data, options) {
 
   yAxisContainer.call(yAxis);
 
-  var bar = innerChart.selectAll('.bar')
-    .data(data)
+  var row = innerChart.selectAll('.row')
+      .data(data);
 
-  var barEnter = bar.enter().append('g')
-      .attr('class', 'bar')
+  row.enter().append('g')
+    .attr('class', 'row');
 
-  if(options.mouseEvents) {
-    barEnter
-      .on('mouseover', function() {
-        d3.select(this)
-          .classed('mouseover', true);
-      })
-      .on('mouseout', function() {
-        d3.select(this)
-          .classed('mouseover', false);
-      })
-      .on('mousedown', function(d, i) {
-        options.barClicked(i);
-      });
-  }
-
-  bar
+  row
     .attr('transform', function(d, i) { return transformTranslate(0, i * options.barHeight); })
-    .classed('clicked', function(d, i) { return i === options.selectedBar; });
+    .classed('clicked', function(d, i) { return i === options.selectedBar; })
+    .on('mouseover', function() {
+      d3.select(this)
+        .classed('mouseover', true);
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .classed('mouseover', false);
+    })
+    .on('mousedown', function(d, i) {
+      options.barClicked(i);
+    });
 
-  barEnter.append('rect')
+  row.exit().remove();
 
-  bar.selectAll('rect')
-    .data(function(d) { return [d]; })
-    .attr('width', x)
-    .attr('height', options.barHeight - 1);
+  var text = row.selectAll('text')
+      .data(d => { return [d]; });
 
-  barEnter
-    .append('text')
-      .attr("dy", ".35em")
+  text.enter().append('text')
+    .attr("dy", ".35em")
 
-  bar.selectAll('text')
-    .data(function(d) { return [d]; })
-    .attr('x', function(d) { return x(d) + 3; })
+  text
+    .attr('x', d => { console.log(d); return x(d.total) + 3; })
     .attr('y', options.barHeight/2)
-    .text(function(d) { return d; });
+    .text(d => { return d; });
 
-  bar.exit().remove();
+  text.exit().remove();
+
+  var rect = row.selectAll('rect')
+      .data(d => { return d.bars; });
+
+  rect.enter().append('rect')
+
+  rect
+    .attr('width', d => { return x(d.x1) - x(d.x0); })
+    .attr('x', d => { return x(d.x0); })
+    .attr('height', options.barHeight - 1); // TODO: y.rangeBand()?
+
+  rect.exit().remove();
 };

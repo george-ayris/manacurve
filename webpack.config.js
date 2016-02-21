@@ -48,7 +48,7 @@ if (process.env.ENV !== 'production') {
     devtool: 'eval-source-map',
     devServer: {
       proxy: {
-        '/monodeck/*': {
+        '/deck*': {
           target: 'http://localhost:3000',
           secure: false
         }

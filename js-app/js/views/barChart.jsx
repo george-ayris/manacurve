@@ -8,18 +8,14 @@ const BarChart = React.createClass({
     barHeight: React.PropTypes.number,
     data: React.PropTypes.array.isRequired,
     indexToLabel: React.PropTypes.func,
-    margin: React.PropTypes.object,
-    barClicked: React.PropTypes.func,
-    selectedBar: React.PropTypes.number,
-    mouseEvents: React.PropTypes.bool
+    margin: React.PropTypes.object
   },
   getDefaultProps: function() {
     return {
       width: 300,
       barHeight: 20,
       indexToLabel: function (x) { return x; },
-      margin: {top: 20, right: 50, bottom: 20, left: 50},
-      barClicked: function(barNumber) {}
+      margin: {top: 20, right: 50, bottom: 20, left: 50}
     };
   },
   render: function() {
