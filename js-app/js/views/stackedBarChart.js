@@ -84,7 +84,7 @@ export default function(chartNode, data, options) {
     .attr("dy", ".35em");
 
   text
-    .attr('x', d => { console.log(d); return x(d.total) + 3; })
+    .attr('x', d => { return x(d.total) + 3; })
     .attr('y', options.barHeight/2)
     .text(d => { return d; });
 

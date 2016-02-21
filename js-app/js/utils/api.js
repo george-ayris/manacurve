@@ -1,9 +1,5 @@
 function numberOfLandsToDeckId(numberOfLandsByColour) {
-  console.log(numberOfLandsByColour[0]);
-  console.log(numberOfLandsByColour[0]*100);
-  console.log(numberOfLandsByColour[0]*100+numberOfLandsByColour[1]);
-  console.log(numberOfLandsByColour[1]);
-  return parseInt(numberOfLandsByColour[0]) * 100 + parseInt(numberOfLandsByColour[1]);
+  return parseInt(numberOfLandsByColour['Red']) * 100 + parseInt(numberOfLandsByColour['Blue']);
 }
 
 export default {

@@ -4,32 +4,32 @@ import React from 'react';
 const Slider = React.createClass({
   propTypes: {
     sliderChanged: React.PropTypes.func.isRequired,
-    manaColour: React.PropTypes.string.isRequired
+    label: React.PropTypes.string.isRequired,
+    sliderValue: React.PropTypes.number.isRequired
   },
-  getInitialState: function() {
+  getInitialState() {
     return {
-      value: 20,
+      previousValue: this.props.value
     };
   },
-  handleChange: function(event) {
+  handleChange(event) {
     var sliderValue = event.target.value;
     var component = this;
     this.setState({
-      value: sliderValue
+      previousValue: sliderValue
     });
     window.setTimeout(function() {
-      console.log(sliderValue, component.state.value)
-      if (sliderValue == component.state.value) {
+      if (sliderValue == component.state.previousValue) {
         component.props.sliderChanged(sliderValue);
       }
     }, 200);
   },
-  render: function() {
+  render() {
     return (
       <div>
-        <label htmlFor="range">Number {this.props.manaColour} of Lands</label>
-        <input type="range" id="range" min="0" value={this.state.value} onChange={this.handleChange} max="60" step="1" />
-        <output htmlFor="range">{this.state.value}</output>
+        <label htmlFor="range">{this.props.label}</label>
+        <input type="range" id="range" min="0" value={this.props.sliderValue} onChange={this.handleChange} max="60" step="1" />
+        <output htmlFor="range">{this.props.sliderValue}</output>
       </div>
     );
   }

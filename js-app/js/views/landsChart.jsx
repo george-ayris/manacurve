@@ -11,7 +11,7 @@ const LandsChart = React.createClass({
   componentDidMount() {
     LandsStore.addChangeListener(this._onChange);
     //this.updateData(this.state.numberOfLands);
-    LandsActions.updateNumberOfLands([this.state.numberOfColour1, this.state.numberOfColour2]);
+    LandsActions.updateNumberOfLands(this.state.numberOfEachColour);
   },
 
   componentWillUnmount() {
@@ -29,12 +29,10 @@ const LandsChart = React.createClass({
     }
   },*/
 
-  colour1SliderChanged(newValue) {
-    LandsActions.updateNumberOfLands([newValue, this.state.numberOfColour2]);
-  },
-
-  colour2SliderChanged(newValue) {
-    LandsActions.updateNumberOfLands([this.state.numberOfColour1, newValue]);
+  colourSliderChanged(colour, newValue) {
+    var copy = this.state.numberOfEachColour.slice(0);
+    copy[colour] = newValue;
+    LandsActions.updateNumberOfLands(copy);
   },
 
   /*updateData(numberOfLands) {
@@ -80,11 +78,22 @@ const LandsChart = React.createClass({
 
   render() {
     var self = this;
+    var makeSlider = colour => {
+      return <Slider
+        sliderValue={self.state.numberOfEachColour[colour]}
+        label={colour}
+        sliderChanged={n => { return self.colourSliderChanged(colour, n); }}
+      />;
+    };
+
+    var sliders = <div>
+      {makeSlider('Red')}
+      {makeSlider('Blue')}
+    </div>;
     if (this.state.numberOfSimulationsRunning === 0) {
 
       if (this.state.selectedTurn || this.state.selectedTurn === 0) {
         var dataForSelectedTurn = this.state.mostCommonLandScenarios[this.state.selectedTurn].map((x, i) => { return x.probability; });
-        console.log(dataForSelectedTurn);
         var turnChart =
           <BarChart
             data={dataForSelectedTurn}
@@ -99,8 +108,7 @@ const LandsChart = React.createClass({
 
       return (
         <div>
-          <Slider manaColour={"Red"} sliderChanged={this.colour1SliderChanged} />
-          <Slider manaColour={"Blue"} sliderChanged={this.colour2SliderChanged} />
+          {sliders}
           <StackedBarChart
             data={this.state.averages}
             indexToLabel={ i => { return 'Turn ' + (i+1); }}
@@ -118,8 +126,7 @@ const LandsChart = React.createClass({
 
     return (
       <div>
-        <Slider manaColour={"Red"} sliderChanged={this.colour1SliderChanged} />
-        <Slider manaColour={"Blue"} sliderChanged={this.colour2SliderChanged} />
+        {sliders}
         <span>Running simulation</span>
       </div>
     );
