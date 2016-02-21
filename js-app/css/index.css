@@ -1,13 +1,19 @@
-.row rect {
+.row rect.colour1 {
+  fill: #C80000;
+}
+
+.row rect.colour2 {
   fill: steelblue;
 }
 
 .row.mouseover rect {
-  fill: green;
+  stroke: grey;
+  stroke-width: 2;
 }
 
 .row.clicked rect {
-  fill: red;
+  stroke: black;
+  stroke-width: 2;
 }
 
 .row text, .axis text {

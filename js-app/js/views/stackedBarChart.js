@@ -12,7 +12,7 @@ export default function(chartNode, data, options) {
 
   data.forEach(d => {
     var x0 = 0;
-    d.bars = d.map(x => { return { x0: x0, x1: x0 += x } });
+    d.bars = d.map((x, i) => { return { x0: x0, x1: x0 += x, cssClass: 'colour' + (i+1) } });
     d.total = x0;
   });
 
@@ -81,7 +81,7 @@ export default function(chartNode, data, options) {
       .data(d => { return [d]; });
 
   text.enter().append('text')
-    .attr("dy", ".35em")
+    .attr("dy", ".35em");
 
   text
     .attr('x', d => { console.log(d); return x(d.total) + 3; })
@@ -93,12 +93,13 @@ export default function(chartNode, data, options) {
   var rect = row.selectAll('rect')
       .data(d => { return d.bars; });
 
-  rect.enter().append('rect')
+  rect.enter().append('rect');
 
   rect
     .attr('width', d => { return x(d.x1) - x(d.x0); })
     .attr('x', d => { return x(d.x0); })
-    .attr('height', options.barHeight - 1); // TODO: y.rangeBand()?
+    .attr('height', options.barHeight - 1) // TODO: y.rangeBand()?
+    .attr('class', d => { return d.cssClass; });
 
   rect.exit().remove();
 };

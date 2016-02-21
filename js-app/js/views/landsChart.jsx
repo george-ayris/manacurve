@@ -30,11 +30,11 @@ const LandsChart = React.createClass({
   },*/
 
   colour1SliderChanged(newValue) {
-    /*console.log('Slider changed', newValue);
-    this.setState({
-      numberOfLands: newValue
-    });*/
     LandsActions.updateNumberOfLands([newValue, this.state.numberOfColour2]);
+  },
+
+  colour2SliderChanged(newValue) {
+    LandsActions.updateNumberOfLands([this.state.numberOfColour1, newValue]);
   },
 
   /*updateData(numberOfLands) {
@@ -100,6 +100,7 @@ const LandsChart = React.createClass({
       return (
         <div>
           <Slider manaColour={"Red"} sliderChanged={this.colour1SliderChanged} />
+          <Slider manaColour={"Blue"} sliderChanged={this.colour2SliderChanged} />
           <StackedBarChart
             data={this.state.averages}
             indexToLabel={ i => { return 'Turn ' + (i+1); }}
@@ -118,6 +119,7 @@ const LandsChart = React.createClass({
     return (
       <div>
         <Slider manaColour={"Red"} sliderChanged={this.colour1SliderChanged} />
+        <Slider manaColour={"Blue"} sliderChanged={this.colour2SliderChanged} />
         <span>Running simulation</span>
       </div>
     );
