@@ -26,7 +26,6 @@ const BarChart = React.createClass({
     createChart(dom, this.props.data, this.props);
   },
   shouldComponentUpdate: function(props) {
-    console.log('Updating bars', props.data);
     var dom = ReactDOM.findDOMNode(this);
     createChart(dom, props.data, props);
     return false;

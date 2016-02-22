@@ -23,7 +23,7 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
   if (Constants.Debug) {
     console.log(action.type, action.data);
   }
-  
+
   switch(action.type) {
 
     case ActionTypes.NUMBER_OF_LANDS_UPDATED:
@@ -47,6 +47,10 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
 
     case ActionTypes.ANALYSIS_ERROR:
       state.numberOfSimulationsRunning -= 1;
+      break;
+
+    case ActionTypes.SELECTED_TURN_UPDATED:
+      state.selectedTurn = action.data;
       break;
 
     default:
