@@ -15,5 +15,11 @@ export default {
   },
   createColoursObject(numberOfLandsByColour) {
     return createObject(numberOfLandsByColour, (colour, _) => { return colour; });
+  },
+  createNumberOfLandsArray(coloursObject) {
+    return Constants.Colours.map(x => coloursObject[x]);
+  },
+  sum(array) {
+    return array.reduce((a, b) => a + b, 0);
   }
 }

@@ -13,6 +13,7 @@ const LandsChart = React.createClass({
   componentDidMount() {
     LandsStore.addChangeListener(this._onChange);
     LandsActions.updateNumberOfLands(this.state.numberOfEachColour);
+    LandsActions.runSimulation(this.state.numberOfEachColour);
   },
 
   componentWillUnmount() {
@@ -27,6 +28,10 @@ const LandsChart = React.createClass({
     var copyOfNumberOfEachColour = Utils.createColoursObject(this.state.numberOfEachColour);
     copyOfNumberOfEachColour[colour] = parseInt(newValue);
     LandsActions.updateNumberOfLands(copyOfNumberOfEachColour);
+  },
+
+  runSimulation() {
+    LandsActions.runSimulation(this.state.numberOfEachColour);
   },
 
   render() {
@@ -46,6 +51,8 @@ const LandsChart = React.createClass({
     var sliders =
       <div>
         {Constants.Colours.map(x => { return makeSlider(x); })}
+        <div>{this.state.error}</div>
+        <button onClick={this.runSimulation}>Run simulation</button>
       </div>;
 
     if (this.state.numberOfSimulationsRunning !== 0) {

@@ -13,6 +13,7 @@ var state = {
   },
   numberOfSimulationsRunning: 0,
   selectedTurn: null,
+  error: null
 };
 
 var LandsStore = assign({}, Store, {
@@ -27,7 +28,11 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
   switch(action.type) {
 
     case ActionTypes.NUMBER_OF_LANDS_UPDATED:
+      state.error = null;
       state.numberOfEachColour = action.data;
+      break;
+
+    case ActionTypes.STARTING_SIMULATION:
       state.numberOfSimulationsRunning += 2;
       break;
 
@@ -51,6 +56,10 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
 
     case ActionTypes.SELECTED_TURN_UPDATED:
       state.selectedTurn = action.data;
+      break;
+
+    case ActionTypes.INVALID_SIMULATION:
+      state.error = "Invalid deck";
       break;
 
     default:

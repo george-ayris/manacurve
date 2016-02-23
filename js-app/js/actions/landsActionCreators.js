@@ -1,5 +1,6 @@
 import Dispatcher from '../dispatcher'
 import Api from '../utils/api'
+import Utils from '../utils/utils'
 import Constants from '../constants'
 const ActionTypes = Constants.ActionTypes
 
@@ -7,6 +8,22 @@ export default {
   updateNumberOfLands(numberOfLandsByColour) {
     Dispatcher.dispatch({
       type: ActionTypes.NUMBER_OF_LANDS_UPDATED,
+      data: numberOfLandsByColour
+    });
+  },
+
+  runSimulation(numberOfLandsByColour) {
+    var landsArray = Utils.createNumberOfLandsArray(numberOfLandsByColour);
+    if (Utils.sum(landsArray) > 60) {
+      Dispatcher.dispatch({
+        type: ActionTypes.INVALID_SIMULATION,
+        data: numberOfLandsByColour
+      });
+      return;
+    }
+
+    Dispatcher.dispatch({
+      type: ActionTypes.STARTING_SIMULATION,
       data: numberOfLandsByColour
     });
 
