@@ -21,7 +21,7 @@ export default function(chartNode, data, options) {
     .range([0, chartWidth]);
 
   var y = d3.scale.ordinal()
-    .domain(data.map(function(_, i) { return options.indexToLabel(i); }))
+    .domain(data.map(function(_, i) { return options.indexToAxisLabel(i); }))
     .rangeBands([0, chartHeight], .1);
 
   var yAxis = d3.svg.axis()
@@ -62,18 +62,22 @@ export default function(chartNode, data, options) {
 
   row
     .attr('transform', function(d, i) { return transformTranslate(0, i * options.barHeight); })
-    .classed('clicked', function(d, i) { return i === options.selectedBar; })
-    .on('mouseover', function() {
-      d3.select(this)
-        .classed('mouseover', true);
-    })
-    .on('mouseout', function() {
-      d3.select(this)
-        .classed('mouseover', false);
-    })
-    .on('mousedown', function(d, i) {
-      options.barClicked(i);
-    });
+    .classed('clicked', function(d, i) { return i === options.selectedBar; });
+
+  if(options.barClicked) {
+    row
+      .on('mouseover', function() {
+        d3.select(this)
+          .classed('mouseover', true);
+      })
+      .on('mouseout', function() {
+        d3.select(this)
+          .classed('mouseover', false);
+      })
+      .on('mousedown', function(d, i) {
+        options.barClicked(i);
+      });
+  }
 
   row.exit().remove();
 
@@ -86,7 +90,7 @@ export default function(chartNode, data, options) {
   text
     .attr('x', d => { return x(d.total) + 3; })
     .attr('y', options.barHeight/2)
-    .text(d => { return d; });
+    .text(options.dataToBarLabel);
 
   text.exit().remove();
 

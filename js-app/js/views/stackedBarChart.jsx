@@ -7,7 +7,8 @@ const StackedBarChart = React.createClass({
     width: React.PropTypes.number,
     barHeight: React.PropTypes.number,
     data: React.PropTypes.array.isRequired,
-    indexToLabel: React.PropTypes.func,
+    indexToAxisLabel: React.PropTypes.func,
+    dataToBarLabel: React.PropTypes.func,
     margin: React.PropTypes.object,
     barClicked: React.PropTypes.func,
     selectedBar: React.PropTypes.number
@@ -17,8 +18,8 @@ const StackedBarChart = React.createClass({
       width: 300,
       barHeight: 20,
       indexToLabel: function (x) { return x; },
-      margin: {top: 20, right: 50, bottom: 20, left: 50},
-      barClicked: function(barNumber) {}
+      dataToBarLabel: function (x) { return x; },
+      margin: {top: 20, right: 50, bottom: 20, left: 50}
     };
   },
   render: function() {

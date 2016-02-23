@@ -12,7 +12,6 @@ const LandsChart = React.createClass({
 
   componentDidMount() {
     LandsStore.addChangeListener(this._onChange);
-    //this.updateData(this.state.numberOfLands);
     LandsActions.updateNumberOfLands(this.state.numberOfEachColour);
   },
 
@@ -54,16 +53,27 @@ const LandsChart = React.createClass({
 
     } else {
       if (this.state.selectedTurn || this.state.selectedTurn === 0) {
-        var dataForSelectedTurn = this.state.mostCommonLandScenarios[this.state.selectedTurn].map((x, i) => { return x.probability; });
+        var landScenarioWeightedByProbability = this.state.mostCommonLandScenarios[this.state.selectedTurn]
+          .map((x, i) => {
+            var totalLandsInScenario = x.landScenario.reduce((a, b) => a + b, 0);
+            return x.landScenario.map(y => {
+              if (totalLandsInScenario === 0) return 0;
+              return y * x.probability / totalLandsInScenario;
+            });
+          });
+
         var landScenarioLabels = i => {
           var landScenarios = self.state.mostCommonLandScenarios[self.state.selectedTurn].map((x, i) => { return x.landScenario; });
           return landScenarios[i];
         };
 
+        var combineWeightedProbabilities = x => x.reduce((a, b) => a + b, 0);
+
         var turnChart =
-          <BarChart
-            data={dataForSelectedTurn}
-            indexToLabel={landScenarioLabels}
+          <StackedBarChart
+            data={landScenarioWeightedByProbability}
+            indexToAxisLabel={landScenarioLabels}
+            dataToBarLabel={combineWeightedProbabilities}
           />
 
       } else {
@@ -79,7 +89,7 @@ const LandsChart = React.createClass({
         <div>
           <StackedBarChart
             data={this.state.averages}
-            indexToLabel={ i => { return 'Turn ' + (i+1); }}
+            indexToAxisLabel={ i => { return 'Turn ' + (i+1); }}
             barClicked={updateSelectedBar}
             selectedBar={self.state.selectedTurn}
           />
