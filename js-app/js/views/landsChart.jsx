@@ -11,17 +11,72 @@ const LandsChart = React.createClass({
   getInitialState: LandsStore.getState,
 
   componentDidMount() {
-    LandsStore.addChangeListener(this._onChange);
+    LandsStore.addChangeListener(this.onChange);
     LandsActions.updateNumberOfLands(this.state.numberOfEachColour);
     LandsActions.runSimulation(this.state.numberOfEachColour);
   },
 
   componentWillUnmount() {
-    LandsStore.removeChangeListener(this._onChange);
+    LandsStore.removeChangeListener(this.onChange);
   },
 
-  _onChange() {
+  onChange() {
     this.setState(LandsStore.getState());
+  },
+
+  render() {
+    var sliders =
+      <div>
+        {Constants.Colours.map(x => { return this.makeSlider(x); })}
+        <div>{this.state.error}</div>
+        <button onClick={this.runSimulation}>Run simulation</button>
+      </div>;
+
+    if (this.state.numberOfSimulationsRunning === 0) {
+      if (this.state.selectedTurn || this.state.selectedTurn === 0) {
+        var turnChart =
+          <StackedBarChart
+            data={this.landScenariosWeightedByProbability()}
+            indexToAxisLabel={this.landScenarioLabels}
+            dataToBarLabel={Utils.sum}
+          />
+
+      } else {
+        var turnChart = <div>No turn selected</div>;
+      }
+
+      var body =
+        <div>
+          <StackedBarChart
+            data={this.state.averages}
+            indexToAxisLabel={ i => { return 'Turn ' + (i+1); }}
+            barClicked={this.updateSelectedBar}
+            selectedBar={this.state.selectedTurn}
+          />
+          <br />
+          {turnChart}
+        </div>
+    } else {
+      var body = <span>Running simulation</span>
+    }
+
+    return (
+      <div>
+        {sliders}
+        {body}
+      </div>
+    );
+  },
+
+  makeSlider(colour) {
+    return (
+      <Slider
+        sliderValue={this.state.numberOfEachColour[colour]}
+        label={colour}
+        sliderChanged={n => { return this.colourSliderChanged(colour, n); }}
+        key={colour}
+      />
+    );
   },
 
   colourSliderChanged(colour, newValue) {
@@ -34,83 +89,29 @@ const LandsChart = React.createClass({
     LandsActions.runSimulation(this.state.numberOfEachColour);
   },
 
-  render() {
-    var self = this;
+  landScenariosWeightedByProbability() {
+    return this.state.mostCommonLandScenarios[this.state.selectedTurn]
+      .map((x, i) => {
+        var totalLandsInScenario = Utils.sum(x.landScenario);
 
-    var makeSlider = colour => {
-      return (
-        <Slider
-          sliderValue={self.state.numberOfEachColour[colour]}
-          label={colour}
-          sliderChanged={n => { return self.colourSliderChanged(colour, n); }}
-          key={colour}
-        />
-      );
-    };
-
-    var sliders =
-      <div>
-        {Constants.Colours.map(x => { return makeSlider(x); })}
-        <div>{this.state.error}</div>
-        <button onClick={this.runSimulation}>Run simulation</button>
-      </div>;
-
-    if (this.state.numberOfSimulationsRunning !== 0) {
-      var body = <span>Running simulation</span>
-
-    } else {
-      if (this.state.selectedTurn || this.state.selectedTurn === 0) {
-        var landScenarioWeightedByProbability = this.state.mostCommonLandScenarios[this.state.selectedTurn]
-          .map((x, i) => {
-            var totalLandsInScenario = x.landScenario.reduce((a, b) => a + b, 0);
-            return x.landScenario.map(y => {
-              if (totalLandsInScenario === 0) return 0;
-              return y * x.probability / totalLandsInScenario;
-            });
+        return x.landScenario
+          .map(landCountByColour => {
+            if (totalLandsInScenario === 0) return 0;
+            return landCountByColour * x.probability / totalLandsInScenario;
           });
+      });
+  },
 
-        var landScenarioLabels = i => {
-          var landScenarios = self.state.mostCommonLandScenarios[self.state.selectedTurn].map((x, i) => { return x.landScenario; });
-          return landScenarios[i];
-        };
+  landScenarioLabels(index) {
+    var landScenarioNamesForSelectedTurn =
+      this.state.mostCommonLandScenarios[this.state.selectedTurn]
+        .map((x, i) => { return x.landScenario; });
+    return landScenarioNamesForSelectedTurn[index];
+  },
 
-        var combineWeightedProbabilities = x => x.reduce((a, b) => a + b, 0);
-
-        var turnChart =
-          <StackedBarChart
-            data={landScenarioWeightedByProbability}
-            indexToAxisLabel={landScenarioLabels}
-            dataToBarLabel={combineWeightedProbabilities}
-          />
-
-      } else {
-        var turnChart = <div>No turn selected</div>;
-      }
-
-      var updateSelectedBar = barClicked => {
-        var selectedTurn = barClicked === self.state.selectedTurn ? null : barClicked;
-        LandsActions.updateSelectedTurn(selectedTurn);
-      }
-
-      var body =
-        <div>
-          <StackedBarChart
-            data={this.state.averages}
-            indexToAxisLabel={ i => { return 'Turn ' + (i+1); }}
-            barClicked={updateSelectedBar}
-            selectedBar={self.state.selectedTurn}
-          />
-          <br />
-          {turnChart}
-        </div>
-    }
-
-    return (
-      <div>
-        {sliders}
-        {body}
-      </div>
-    );
+  updateSelectedBar(barClicked) {
+    var selectedTurn = barClicked === this.state.selectedTurn ? null : barClicked;
+    LandsActions.updateSelectedTurn(selectedTurn);
   }
 });
 
