@@ -18,7 +18,8 @@ var state = {
   probability: 1,
   queryNumbers: {
     Red: 0,
-    Blue: 0
+    Blue: 0,
+    Any: 0
   }
 };
 
@@ -44,11 +45,16 @@ function calculateNewProbability(queryNumbers, landScenarios, selectedTurn) {
 }
 
 function queryMatchesScenario(queryNumbers, scenario) {
-  return Constants.Colours.reduce((match, colour, i) => {
-
+  var exactColourMatch = Constants.Colours.reduce((match, colour, i) => {
     var doesQueryMatchCurrentColour = queryNumbers[colour] <= scenario[i];
     return match && doesQueryMatchCurrentColour;
   }, true);
+
+  var totalNumberOfExactColours = Utils.sum(Constants.Colours.map(colour => queryNumbers[colour]));
+  var totalLandsInScenario = Utils.sum(scenario);
+  var enoughLandsLeftToCoverAny = (totalLandsInScenario - totalNumberOfExactColours) >= queryNumbers['Any'];
+
+  return exactColourMatch && enoughLandsLeftToCoverAny;
 }
 
 var LandsStore = assign({}, Store, {

@@ -8,6 +8,7 @@ const ProbabilityQuery = React.createClass({
     currentTurn: React.PropTypes.number,
     probability: React.PropTypes.number
   },
+
   onChange(colour, event) {
     var int = parseInt(event.target.value)
     if (int || int === 0) {
@@ -19,22 +20,17 @@ const ProbabilityQuery = React.createClass({
       LandsActions.updateQueryNumbers(this.props.queryNumbers);
     }
   },
+
   render() {
-    var self = this;
-    var inputs = Constants.Colours.map((colour, i) => {
-        return(
-          <div key={"probability-" + colour}>
-            <label htmlFor={"probability-" + colour}>{colour}</label>
-            <input id={"probability-" + colour} onChange={e => self.onChange(colour, e)} value={self.props.queryNumbers[colour]}/>
-          </div>);
-    });
+    var colourInputs = Constants.Colours.map(this.makeInput);
 
     if (this.props.currentTurn || this.props.currentTurn === 0) {
       return(
         <div>
           <div>
             What is the probability of:
-            {inputs}
+            {colourInputs}
+            {this.makeInput("Any")}
             on turn {this.props.currentTurn + 1}?
           </div>
           <div>
@@ -44,7 +40,14 @@ const ProbabilityQuery = React.createClass({
     } else {
       return <div>No turn selected</div>
     }
+  },
 
+  makeInput(colour) {
+    return(
+      <div key={"probability-" + colour}>
+        <label htmlFor={"probability-" + colour}>{colour}</label>
+        <input id={"probability-" + colour} onChange={e => this.onChange(colour, e)} value={this.props.queryNumbers[colour]}/>
+      </div>);
   }
 });
 
