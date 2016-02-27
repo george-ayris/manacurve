@@ -2,6 +2,7 @@ import React from 'react';
 import StackedBarChart from './stackedBarChart.jsx'
 import BarChart from './barChart.jsx'
 import Slider from './slider.jsx'
+import ProbabilityQuery from './probabilityQuery.jsx'
 import LandsStore from '../stores/landsStore'
 import LandsActions from '../actions/landsActionCreators'
 import Constants from '../constants'
@@ -63,6 +64,13 @@ const LandsChart = React.createClass({
     return (
       <div>
         {sliders}
+        <br />
+        <ProbabilityQuery
+          queryNumbers={this.state.queryNumbers}
+          currentTurn={this.state.selectedTurn}
+          probability={this.state.probability}
+        />
+        <br />
         {body}
       </div>
     );

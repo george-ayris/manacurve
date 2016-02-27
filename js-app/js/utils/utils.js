@@ -21,5 +21,11 @@ export default {
   },
   sum(array) {
     return array.reduce((a, b) => a + b, 0);
+  },
+  objectMap(object, mapFunction) {
+    return Object.keys(object).reduce((objectUnderConstruction, currentKey) => {
+      objectUnderConstruction[currentKey] = mapFunction(object[currentKey]);
+      return objectUnderConstruction;
+    }, {})
   }
 }

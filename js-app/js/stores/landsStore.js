@@ -2,6 +2,7 @@ import assign from 'object-assign'
 import Store from './store'
 import Dispatcher from '../dispatcher'
 import Constants from '../constants'
+import Utils from '../utils/utils'
 const ActionTypes = Constants.ActionTypes;
 
 var state = {
@@ -13,8 +14,42 @@ var state = {
   },
   numberOfSimulationsRunning: 0,
   selectedTurn: null,
-  error: null
+  error: null,
+  probability: 1,
+  queryNumbers: {
+    Red: 0,
+    Blue: 0
+  }
 };
+
+function calculateNewProbability(queryNumbers, landScenarios, selectedTurn) {
+  if (selectedTurn || selectedTurn === 0) {
+    var queryNumbersWithNoEmptyString =
+      Utils.objectMap(queryNumbers, x => parseInt(x) || 0);
+
+    var probabilityOfQuery = state.mostCommonLandScenarios[state.selectedTurn]
+      .reduce((cumulativeProbability, scenario) => {
+
+        if (queryMatchesScenario(queryNumbersWithNoEmptyString, scenario.landScenario)) {
+          cumulativeProbability += scenario.probability;
+        }
+        return cumulativeProbability;
+      } , 0);
+
+    return Math.round(probabilityOfQuery*100)/100;
+
+  } else {
+    return 1;
+  }
+}
+
+function queryMatchesScenario(queryNumbers, scenario) {
+  return Constants.Colours.reduce((match, colour, i) => {
+
+    var doesQueryMatchCurrentColour = queryNumbers[colour] <= scenario[i];
+    return match && doesQueryMatchCurrentColour;
+  }, true);
+}
 
 var LandsStore = assign({}, Store, {
   getState: () => { return state }
@@ -44,6 +79,7 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
     case ActionTypes.MOST_COMMON_SCENARIOS_UPDATED:
       state.mostCommonLandScenarios = action.data;
       state.numberOfSimulationsRunning -= 1;
+      state.probability = calculateNewProbability(state.queryNumbers, state.mostCommonLandScenarios, state.selectedTurn);
       break;
 
     case ActionTypes.SIMULATION_DIDNT_START:
@@ -56,10 +92,16 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
 
     case ActionTypes.SELECTED_TURN_UPDATED:
       state.selectedTurn = action.data;
+      state.probability = calculateNewProbability(state.queryNumbers, state.mostCommonLandScenarios, state.selectedTurn);
       break;
 
     case ActionTypes.INVALID_SIMULATION:
       state.error = "Invalid deck";
+      break;
+
+    case ActionTypes.QUERY_NUMBER_UPDATED:
+      state.queryNumbers = action.data;
+      state.probability = calculateNewProbability(state.queryNumbers, state.mostCommonLandScenarios, state.selectedTurn);
       break;
 
     default:

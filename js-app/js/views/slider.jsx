@@ -1,6 +1,5 @@
 import React from 'react';
 
-// TODO: Consider removing state from here
 const Slider = React.createClass({
   propTypes: {
     sliderChanged: React.PropTypes.func.isRequired,

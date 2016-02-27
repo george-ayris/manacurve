@@ -70,5 +70,12 @@ export default {
       type: ActionTypes.SELECTED_TURN_UPDATED,
       data: selectedTurn
     });
+  },
+
+  updateQueryNumbers(queryNumbers) {
+    Dispatcher.dispatch({
+      type: ActionTypes.QUERY_NUMBER_UPDATED,
+      data: queryNumbers
+    });
   }
 }
