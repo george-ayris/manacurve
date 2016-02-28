@@ -52,8 +52,8 @@ module Redis =
 
   let logger = Logging.getLoggerByName "Manacurve"
 
-  let encodeLandColours (l : DeckLandQuantities) = l.colour1 * 100 + l.colour2
-  let simulationKey n = "simulation:" + (sprintf "%04i" n)
+  let encodeLandColours (l : DeckLandQuantities) = l.colour1 * 10000 + l.colour2 * 100 + l.colour3
+  let simulationKey n = "simulation:" + (sprintf "%06i" n)
   let averagesKey n = simulationKey n + ":averages"
   let mostCommonLandsKey n = simulationKey n + ":mostcommon"
   let otherKey key n =

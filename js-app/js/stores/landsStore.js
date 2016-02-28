@@ -9,8 +9,9 @@ var state = {
   averages: [],
   mostCommonLandScenarios: [],
   numberOfEachColour: {
-    Red: 12,
-    Blue: 12
+    Red: 8,
+    Blue: 8,
+    Green: 8
   },
   numberOfSimulationsRunning: 0,
   selectedTurn: null,
@@ -19,6 +20,7 @@ var state = {
   queryNumbers: {
     Red: 0,
     Blue: 0,
+    Green: 0,
     Any: 0
   }
 };

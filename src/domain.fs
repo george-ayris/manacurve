@@ -45,11 +45,11 @@ module Cards =
   open ListHelpers
   open Shuffle
 
-  type Land = Colour1 | Colour2
+  type Land = Colour1 | Colour2 | Colour3
   type Card = Land of Land | NonLand
   type PlayerState =
     { hand: Card list; deck: Card list; lands: Card list }
-  type DeckLandQuantities = { colour1: int; colour2: int }
+  type DeckLandQuantities = { colour1: int; colour2: int; colour3: int }
 
   let deckSize = 60
   let startingHandSize = 7
@@ -59,9 +59,10 @@ module Cards =
   let createDeck landQuantities =
     let lands1 = List.replicate landQuantities.colour1 (Land Colour1)
     let lands2 = List.replicate landQuantities.colour2 (Land Colour2)
-    let nonLandQuantity = (deckSize - landQuantities.colour1 - landQuantities.colour2)
+    let lands3 = List.replicate landQuantities.colour3 (Land Colour3)
+    let nonLandQuantity = (deckSize - landQuantities.colour1 - landQuantities.colour2 - landQuantities.colour3)
     let nonLands = List.replicate nonLandQuantity NonLand
-    lands1 @ lands2 @ nonLands
+    lands1 @ lands2 @ lands3 @ nonLands
 
   let isALand = function
     | (Land _) -> true
@@ -73,18 +74,28 @@ module Cards =
     | Land(c) -> match c with
                   | Colour1 -> true
                   | Colour2 -> false
+                  | Colour3 -> false
     | NonLand -> false
 
   let isColour2 = function
     | Land(c) -> match c with
                   | Colour1 -> false
                   | Colour2 -> true
+                  | Colour3 -> false
+    | NonLand -> false
+
+  let isColour3 = function
+    | Land(c) -> match c with
+                  | Colour1 -> false
+                  | Colour2 -> false
+                  | Colour3 -> true
     | NonLand -> false
 
   let numberOfLandsByColour cards =
     let c1 = (List.filter isColour1 cards).Length
     let c2 = (List.filter isColour2 cards).Length
-    [c1; c2]
+    let c3 = (List.filter isColour3 cards).Length
+    [c1; c2; c3]
 
   let landsNotBetween l u hand =
     let landsInHand = numberOfLands hand

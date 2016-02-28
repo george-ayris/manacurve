@@ -6,6 +6,10 @@
   fill: steelblue;
 }
 
+.row rect.colour3 {
+  fill: #258e25;
+}
+
 .row.mouseover rect {
   stroke: grey;
   stroke-width: 2;

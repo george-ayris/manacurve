@@ -11,5 +11,5 @@ export default {
       QUERY_NUMBER_UPDATED: "QUERY_NUMBER_UPDATED"
   },
   Debug: true,
-  Colours: ['Red', 'Blue']
+  Colours: ['Red', 'Blue', 'Green']
 }

@@ -20,9 +20,11 @@ module Analysis =
   let averageLandsPerTurn (simulationResults : int list list list) =
     let toColour1Averages = List.averageBy (fun (lands : int list) -> float lands.[0])
     let toColour2Averages = List.averageBy (fun (lands : int list) -> float lands.[1])
+    let toColour3Averages = List.averageBy (fun (lands : int list) -> float lands.[2])
     let colour1Averages = applyAnalysis toColour1Averages simulationResults
     let colour2Averages = applyAnalysis toColour2Averages simulationResults
-    transpose [colour1Averages; colour2Averages]
+    let colour3Averages = applyAnalysis toColour3Averages simulationResults
+    transpose [colour1Averages; colour2Averages; colour3Averages]
 
   let mostCommonLandScenariosPerTurn simulationResults =
     let probabilityOfLand xs =
