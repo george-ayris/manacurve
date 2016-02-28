@@ -26,13 +26,6 @@ const LandsChart = React.createClass({
   },
 
   render() {
-    var sliders =
-      <div>
-        {Constants.Colours.map(x => { return this.makeSlider(x); })}
-        <div>{this.state.error}</div>
-        <button onClick={this.runSimulation}>Run simulation</button>
-      </div>;
-
     if (this.state.numberOfSimulationsRunning === 0) {
       if (this.state.selectedTurn || this.state.selectedTurn === 0) {
         var turnChart =
@@ -57,9 +50,18 @@ const LandsChart = React.createClass({
           <br />
           {turnChart}
         </div>
+        var runSimulationsButton = <button onClick={this.runSimulation}>Run simulation</button>;
     } else {
-      var body = <span>Running simulation</span>
+      var body = <span>Running simulation</span>;
+      var runSimulationsButton = <button onClick={this.runSimulation} disabled>Run simulation</button>;
     }
+
+    var sliders =
+      <div>
+        {Constants.Colours.map(x => { return this.makeSlider(x); })}
+        <div>{this.state.error}</div>
+        {runSimulationsButton}
+      </div>;
 
     return (
       <div>
