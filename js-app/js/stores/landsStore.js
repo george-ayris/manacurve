@@ -15,7 +15,7 @@ var state = {
   },
   numberOfSimulationsRunning: 0,
   selectedTurn: null,
-  error: null,
+  simulationError: null,
   probability: 1,
   queryNumbers: {
     Red: 0,
@@ -104,7 +104,7 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
       break;
 
     case ActionTypes.INVALID_SIMULATION:
-      state.error = "Invalid deck";
+      state.simulationError = "Invalid deck";
       break;
 
     case ActionTypes.QUERY_NUMBER_UPDATED:

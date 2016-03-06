@@ -45,7 +45,8 @@ module Cards =
   open ListHelpers
   open Shuffle
 
-  type Land = Colour1 | Colour2 | Colour3
+  type ManaColour = Colour1 | Colour2 | Colour3
+  type Land = BasicLand of ManaColour | DualLand of ManaColour*ManaColour
   type Card = Land of Land | NonLand
   type PlayerState =
     { hand: Card list; deck: Card list; lands: Card list }
@@ -57,9 +58,9 @@ module Cards =
   let createPlayerState deck = {hand=[]; deck=deck; lands=[]}
 
   let createDeck landQuantities =
-    let lands1 = List.replicate landQuantities.colour1 (Land Colour1)
-    let lands2 = List.replicate landQuantities.colour2 (Land Colour2)
-    let lands3 = List.replicate landQuantities.colour3 (Land Colour3)
+    let lands1 = List.replicate landQuantities.colour1 (Land (BasicLand Colour1))
+    let lands2 = List.replicate landQuantities.colour2 (Land (BasicLand Colour2))
+    let lands3 = List.replicate landQuantities.colour3 (Land (BasicLand Colour3))
     let nonLandQuantity = (deckSize - landQuantities.colour1 - landQuantities.colour2 - landQuantities.colour3)
     let nonLands = List.replicate nonLandQuantity NonLand
     lands1 @ lands2 @ lands3 @ nonLands
@@ -71,21 +72,21 @@ module Cards =
   let numberOfLands cards = (List.filter isALand cards).Length
 
   let isColour1 = function
-    | Land(c) -> match c with
+    | BasicLand(c) -> match c with
                   | Colour1 -> true
                   | Colour2 -> false
                   | Colour3 -> false
     | NonLand -> false
 
   let isColour2 = function
-    | Land(c) -> match c with
+    | BasicLand(c) -> match c with
                   | Colour1 -> false
                   | Colour2 -> true
                   | Colour3 -> false
     | NonLand -> false
 
   let isColour3 = function
-    | Land(c) -> match c with
+    | BasicLand(c) -> match c with
                   | Colour1 -> false
                   | Colour2 -> false
                   | Colour3 -> true

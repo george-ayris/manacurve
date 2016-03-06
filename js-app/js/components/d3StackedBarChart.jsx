@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import createChart from './stackedBarChart';
+import createChart from '../d3/stackedBarChart';
 
 const StackedBarChart = React.createClass({
   propTypes: {
