@@ -6,3 +6,4 @@ bin/
 build/
 .paket/
 .fake/
+.DS_Store

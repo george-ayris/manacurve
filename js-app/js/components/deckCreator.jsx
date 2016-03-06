@@ -7,7 +7,10 @@ const DeckCreator = props => (
   <div>
     {renderSliders(props)}
     <div>{props.simulationError}</div>
-    <button onClick={props.onRunSimulation} disabled={props.isSimulationRunning}>
+    <button
+      onClick={props.onRunSimulation}
+      disabled={props.isSimulationRunning}
+      className='success button'>
       Run simulation
     </button>
   </div>

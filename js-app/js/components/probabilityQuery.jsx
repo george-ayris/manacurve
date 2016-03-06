@@ -5,17 +5,16 @@ import LandsActions from '../actions/landsActionCreators'
 import IfATurnHasBeenSelected from './ifATurnHasBeenSelected'
 
 const ProbabilityQuery = props => (
-  <IfATurnHasBeenSelected selectedTurn={props.selectedTurn}>
+  <div>
     <div>
-      What is the probability of:
+      On turn {props.selectedTurn + 1}, what is the probability of:
       {renderColourInputs(props)}
       {renderInput("Any", props)}
-      on turn {props.selectedTurn + 1}?
     </div>
-    <div>
-      {props.probability}
-    </div>
-  </IfATurnHasBeenSelected>
+    <IfATurnHasBeenSelected selectedTurn={props.selectedTurn}>
+      Result: {props.probability}
+    </IfATurnHasBeenSelected>
+  </div>
 );
 
 const renderColourInputs = props => Constants.Colours.map(c => renderInput(c, props));
