@@ -4,6 +4,15 @@ import Utils from '../utils/utils'
 import Constants from '../constants'
 const ActionTypes = Constants.ActionTypes
 
+const errorHandler = actionType => {
+  return error => {
+    Dispatcher.dispatch({
+      type: actionType,
+      data: response.message || response.data
+    });
+  };
+};
+
 export default {
   updateNumberOfLands(numberOfLandsByColour) {
     Dispatcher.dispatch({
@@ -28,41 +37,24 @@ export default {
     });
 
     Api.createDeck(numberOfLandsByColour)
-      .done((data, textStatus, jqXHR) => {
+      .then(response => {
         Api.getAverages(numberOfLandsByColour)
-          .done((data, textStatus, jqXHR) => {
+          .then(response => {
             Dispatcher.dispatch({
               type: ActionTypes.AVERAGES_UPDATED,
-              data: data.averages
+              data: response.data.averages
             });
+          }, errorHandler(ActionTypes.ANALYSIS_ERROR));
 
-          }).fail((jqXHR, textStatus, errorThrown) => {
+        Api.getMostCommonScenarios(numberOfLandsByColour)
+          .then(response => {
             Dispatcher.dispatch({
-              type: ActionTypes.ANALYSIS_ERROR,
-              data: textStatus
+              type: ActionTypes.MOST_COMMON_SCENARIOS_UPDATED,
+              data: response.data.mostCommonLandScenarios
             });
-          });
-
-          Api.getMostCommonScenarios(numberOfLandsByColour)
-            .done((data, textStatus, jqXHR) => {
-              Dispatcher.dispatch({
-                type: ActionTypes.MOST_COMMON_SCENARIOS_UPDATED,
-                data: data.mostCommonLandScenarios
-              });
-
-            }).fail((jqXHR, textStatus, errorThrown) => {
-              Dispatcher.dispatch({
-                type: ActionTypes.ANALYSIS_ERROR,
-                data: textStatus
-              });
-            });
-
-      }).fail((jqXHR, textStatus, errorThrown) => {
-        Dispatcher.dispatch({
-          type: ActionTypes.SIMULATION_DIDNT_START,
-          data: textStatus
-        });
-      });
+          }, errorHandler(ActionTypes.ANALYSIS_ERROR));
+          
+      }, errorHandler(ActionTypes.SIMULATION_DIDNT_START));
   },
 
   updateSelectedTurn(selectedTurn) {

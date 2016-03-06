@@ -1,5 +1,6 @@
 import Constants from '../constants'
 import Utils from './utils'
+import Axios from 'axios'
 
 function zeroPad(n) {
   var s = n+"";
@@ -22,8 +23,8 @@ function cacheKey(numberOfLandsByColour, keySuffix) {
 }
 
 function addToCache(key) {
-  return (data, textStatus, jqXHR) => {
-    apiCache[key] = data;
+  return (response) => {
+    apiCache[key] = response.data;
   };
 }
 
@@ -35,31 +36,28 @@ function checkCacheAnd(numberOfLandsByColour, keySuffix, f) {
   var key = cacheKey(numberOfLandsByColour, keySuffix);
   var cachedValue = checkCache(key);
   if (cachedValue) {
-    return $.when(cachedValue);
+    return Promise.resolve({ data: cachedValue });
   } else {
-    return f().done(addToCache(key));
+    const promise = f();
+    promise.then(addToCache(key));
+    return promise;
   }
 }
 
 export default {
   createDeck(numberOfLandsByColour) {
     return checkCacheAnd(numberOfLandsByColour, "", () =>
-      $.ajax({
-        type: "POST",
-        url: "/deck",
-        data: JSON.stringify(Utils.createApiColoursObject(numberOfLandsByColour)),
-        contentType: "application/json; charset=utf-8"
-      })
+      Axios.post('/deck', Utils.createApiColoursObject(numberOfLandsByColour))
     );
   },
 
   getAverages(numberOfLandsByColour) {
     return checkCacheAnd(numberOfLandsByColour, ":averages",
-      () => $.get('/deck/' + numberOfLandsToDeckId(numberOfLandsByColour) + '/averages'));
+      () => Axios.get('/deck/' + numberOfLandsToDeckId(numberOfLandsByColour) + '/averages'));
   },
 
   getMostCommonScenarios(numberOfLandsByColour) {
     return checkCacheAnd(numberOfLandsByColour, ":mostcommon",
-      () => $.get('/deck/' + numberOfLandsToDeckId(numberOfLandsByColour) + '/mostcommon'));
+      () => Axios.get('/deck/' + numberOfLandsToDeckId(numberOfLandsByColour) + '/mostcommon'));
   }
 }

@@ -41,6 +41,4 @@ const AnalysisScreenLayout = props => (
   </div>
 );
 
-
-
 export default AnalysisScreenLayout;
