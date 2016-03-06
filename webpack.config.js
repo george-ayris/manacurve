@@ -35,10 +35,6 @@ var common = {
   plugins: [
     new HtmlwebpackPlugin({
       title: 'Mana Curve'
-    }),
-    new webpack.ProvidePlugin({
-      d3: 'd3',
-      $: 'jquery'
     })
   ]
 };
@@ -71,5 +67,9 @@ if (process.env.ENV !== 'production') {
     ],
   });
 } else {
-  module.exports = common;
+  module.exports = merge(common, {
+    plugins: [
+      new webpack.optimize.UglifyJsPlugin()
+    ]
+  });
 }
