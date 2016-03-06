@@ -13,7 +13,7 @@ var state = {
     Blue: 8,
     Green: 8
   },
-  numberOfSimulationsRunning: 0,
+  isSimulationRunning: false,
   selectedTurn: null,
   simulationError: null,
   probability: 1,
@@ -24,6 +24,16 @@ var state = {
     Any: 0
   }
 };
+
+var numberOfSimulationsRunning = 0;
+function updateNumberOfSimulationsRunning(n) {
+  numberOfSimulationsRunning += n;
+  if (numberOfSimulationsRunning === 0) {
+    state.isSimulationRunning = false;
+  } else {
+    state.isSimulationRunning = true;
+  }
+}
 
 function calculateNewProbability(queryNumbers, landScenarios, selectedTurn) {
   if (selectedTurn || selectedTurn === 0) {
@@ -76,26 +86,26 @@ LandsStore.dispatchToken = Dispatcher.register(function(action) {
       break;
 
     case ActionTypes.STARTING_SIMULATION:
-      state.numberOfSimulationsRunning += 2;
+      updateNumberOfSimulationsRunning(2);
       break;
 
     case ActionTypes.AVERAGES_UPDATED:
       state.averages = action.data;
-      state.numberOfSimulationsRunning -= 1;
+      updateNumberOfSimulationsRunning(-1);
       break;
 
     case ActionTypes.MOST_COMMON_SCENARIOS_UPDATED:
       state.mostCommonLandScenarios = action.data;
-      state.numberOfSimulationsRunning -= 1;
+      updateNumberOfSimulationsRunning(-1);
       state.probability = calculateNewProbability(state.queryNumbers, state.mostCommonLandScenarios, state.selectedTurn);
       break;
 
     case ActionTypes.SIMULATION_DIDNT_START:
-      state.numberOfSimulationsRunning -= 2;
+      updateNumberOfSimulationsRunning(-2);
       break;
 
     case ActionTypes.ANALYSIS_ERROR:
-      state.numberOfSimulationsRunning -= 1;
+      updateNumberOfSimulationsRunning(-1);
       break;
 
     case ActionTypes.SELECTED_TURN_UPDATED:

@@ -3,9 +3,9 @@ import LandsStore from '../stores/landsStore'
 import LandsActions from '../actions/landsActionCreators'
 import Constants from '../constants'
 import Utils from '../utils/utils'
-import LandsChart from '../components/landsChart'
+import AnalysisScreenLayout from '../components/analysisScreenLayout'
 
-const LandsChartContainer = React.createClass({
+const AnalysisScreenLayoutContainer = React.createClass({
   getInitialState: LandsStore.getState,
 
   componentDidMount() {
@@ -32,15 +32,29 @@ const LandsChartContainer = React.createClass({
   },
 
   handleSliderChanged(colour, newValue) {
-    var copyOfNumberOfEachColour = Utils.createColoursObject(this.state.numberOfEachColour);
-    copyOfNumberOfEachColour[colour] = parseInt(newValue);
-    LandsActions.updateNumberOfLands(copyOfNumberOfEachColour);
+    var numberOfEachColourCopy = Utils.createColoursObject(this.state.numberOfEachColour);
+    numberOfEachColourCopy[colour] = parseInt(newValue);
+    LandsActions.updateNumberOfLands(numberOfEachColourCopy);
+  },
+
+  handleQueryNumbersChanged(colour, event) {
+    var queryNumbersCopy = Utils.objectMap(this.state.queryNumbers, x => x);
+    var int = parseInt(event.target.value)
+
+    if (int || int === 0) {
+      queryNumbersCopy[colour] = parseInt(event.target.value);
+      LandsActions.updateQueryNumbers(queryNumbersCopy);
+
+    } else if (event.target.value === "") {
+      queryNumbersCopy[colour] = "";
+      LandsActions.updateQueryNumbers(queryNumbersCopy);
+    }
   },
 
   render() {
     return (
-      <LandsChart
-        numberOfSimulationsRunning={this.state.numberOfSimulationsRunning}
+      <AnalysisScreenLayout
+        isSimulationRunning={this.state.isSimulationRunning}
         selectedTurn={this.state.selectedTurn}
         averages={this.state.averages}
         mostCommonLandScenarios={this.state.mostCommonLandScenarios}
@@ -51,9 +65,10 @@ const LandsChartContainer = React.createClass({
         onRunSimulation={this.handleRunSimulation}
         onBarSelected={this.handleBarSelected}
         onSliderChanged={this.handleSliderChanged}
+        onQueryNumbersChanged={this.handleQueryNumbersChanged}
       />
     )
   }
 });
 
-export default LandsChartContainer;
+export default AnalysisScreenLayoutContainer;

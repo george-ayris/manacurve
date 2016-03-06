@@ -1,54 +1,37 @@
 import React from 'react'
+const PropTypes = React.PropTypes;
 import Constants from '../constants'
 import LandsActions from '../actions/landsActionCreators'
+import IfATurnHasBeenSelected from './ifATurnHasBeenSelected'
 
-const ProbabilityQuery = React.createClass({
-  propTypes: {
-    queryNumbers: React.PropTypes.object.isRequired,
-    currentTurn: React.PropTypes.number,
-    probability: React.PropTypes.number
-  },
+const ProbabilityQuery = props => (
+  <IfATurnHasBeenSelected selectedTurn={props.selectedTurn}>
+    <div>
+      What is the probability of:
+      {renderColourInputs(props)}
+      {renderInput("Any", props)}
+      on turn {props.selectedTurn + 1}?
+    </div>
+    <div>
+      {props.probability}
+    </div>
+  </IfATurnHasBeenSelected>
+);
 
-  onChange(colour, event) {
-    var int = parseInt(event.target.value)
-    if (int || int === 0) {
-      this.props.queryNumbers[colour] = parseInt(event.target.value);
-      LandsActions.updateQueryNumbers(this.props.queryNumbers);
+const renderColourInputs = props => Constants.Colours.map(c => renderInput(c, props));
 
-    } else if (event.target.value === "") {
-      this.props.queryNumbers[colour] = "";
-      LandsActions.updateQueryNumbers(this.props.queryNumbers);
-    }
-  },
+const renderInput = (colour, props) => (
+  <div key={"probability-" + colour}>
+    <label htmlFor={"probability-" + colour}>{colour}</label>
+    <input id={"probability-" + colour} onChange={e => props.onQueryNumbersChanged(colour, e)} value={props.queryNumbers[colour]}/>
+  </div>
+);
 
-  render() {
-    var colourInputs = Constants.Colours.map(this.makeInput);
-
-    if (this.props.currentTurn || this.props.currentTurn === 0) {
-      return(
-        <div>
-          <div>
-            What is the probability of:
-            {colourInputs}
-            {this.makeInput("Any")}
-            on turn {this.props.currentTurn + 1}?
-          </div>
-          <div>
-            {this.props.probability}
-          </div>
-        </div>);
-    } else {
-      return <div>No turn selected</div>
-    }
-  },
-
-  makeInput(colour) {
-    return(
-      <div key={"probability-" + colour}>
-        <label htmlFor={"probability-" + colour}>{colour}</label>
-        <input id={"probability-" + colour} onChange={e => this.onChange(colour, e)} value={this.props.queryNumbers[colour]}/>
-      </div>);
-  }
-});
+ProbabilityQuery.propTypes = {
+  queryNumbers: PropTypes.object.isRequired,
+  currentTurn: PropTypes.number,
+  probability: PropTypes.number,
+  onQueryNumbersChanged: PropTypes.func.isRequired
+};
 
 export default ProbabilityQuery;
