@@ -8,7 +8,7 @@ const errorHandler = actionType => {
   return error => {
     Dispatcher.dispatch({
       type: actionType,
-      data: response.message || response.data
+      data: error.message || (error.status + ' ' + error.statusText)
     });
   };
 };
@@ -53,7 +53,7 @@ export default {
               data: response.data.mostCommonLandScenarios
             });
           }, errorHandler(ActionTypes.ANALYSIS_ERROR));
-          
+
       }, errorHandler(ActionTypes.SIMULATION_DIDNT_START));
   },
 
