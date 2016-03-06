@@ -34,3 +34,7 @@ text.title {
   font: 14px sans-serif;
   text-anchor: middle;
 }
+
+.center-contents {
+  text-align: center;
+}

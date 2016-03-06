@@ -4,18 +4,22 @@ import Constants from '../constants'
 import LandsActions from '../actions/landsActionCreators'
 import IfATurnHasBeenSelected from './ifATurnHasBeenSelected'
 
-const ProbabilityQuery = props => (
-  <div>
+const ProbabilityQuery = props => {
+  var selectedTurn = selectedTurn == null ? '?' : props.selectedTurn + 1;
+  return (
     <div>
-      On turn {props.selectedTurn + 1}, what is the probability of:
-      {renderColourInputs(props)}
-      {renderInput("Any", props)}
+      <div>
+        On turn {selectedTurn}, what is the probability of:
+        {renderColourInputs(props)}
+        {renderInput("Any", props)}
+      </div>
+      <span>Result: </span>
+      <IfATurnHasBeenSelected selectedTurn={props.selectedTurn}>
+         {props.probability}
+      </IfATurnHasBeenSelected>
     </div>
-    <IfATurnHasBeenSelected selectedTurn={props.selectedTurn}>
-      Result: {props.probability}
-    </IfATurnHasBeenSelected>
-  </div>
-);
+  );
+};
 
 const renderColourInputs = props => Constants.Colours.map(c => renderInput(c, props));
 

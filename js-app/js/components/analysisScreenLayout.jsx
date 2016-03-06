@@ -36,9 +36,14 @@ const AnalysisScreenLayout = props => (
         />
       </div>
     </div>
+    <br />
     <div className="row">
       {props.isSimulationRunning ?
-        <span>Running simulation</span> :
+        <div className="center-contents">
+          <br />
+          <h3>Running simulation</h3>
+        </div>
+        :
         <div>
           <div className="columns small-6">
             <div>

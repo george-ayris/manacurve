@@ -2,9 +2,9 @@ import React from 'react'
 
 const IfATurnHasBeenSelected = props => {
   if(props.selectedTurn || props.selectTurn === 0) {
-    return <div>{props.children}</div>;
+    return <span>{props.children}</span>;
   } else {
-    return <div>No turn selected</div>;
+    return <span>No turn selected</span>;
   }
 }
 
