@@ -44,11 +44,15 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src/domain.fs" />
-    <Compile Include="src/analysis.fs" />
-    <Compile Include="src/serialisation.fs" />
-    <Compile Include="src/api.fs" />
-    <Compile Include="app.fs" />
+    <Compile Include="src/DomainTypes.fs" />
+    <Compile Include="src/Serialisation.fs" />
+    <Compile Include="src/ListHelpers.fs" />
+    <Compile Include="src/Domain.fs" />
+    <Compile Include="src/ApiHelpers.fs" />
+    <Compile Include="src/Analysis.fs" />
+    <Compile Include="src/Cache.fs" />
+    <Compile Include="src/Api.fs" />
+    <Compile Include="App.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

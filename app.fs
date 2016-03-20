@@ -7,7 +7,7 @@ open Suave.Operators
 open Suave.Files
 open System.IO
 open Suave.Logging
-open Manacurve.Api
+open Manacurve
 open Logary
 open Logary.Configuration
 open Logary.Targets
@@ -17,7 +17,7 @@ open System.Net
 let app : WebPart =
   choose
     [ path "/" >=> browseFileHome "index.html"
-      Deck.endpoints
+      Api.endpoints
       browseHome
       NOT_FOUND ""]
 

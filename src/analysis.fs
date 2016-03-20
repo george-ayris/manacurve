@@ -1,9 +1,9 @@
-namespace Manacurve.Domain
+namespace Manacurve
 
-open Manacurve.Domain.Cards
-open Manacurve.Domain.ListHelpers
+open Domain
 
 module Analysis =
+
   let simulationCount = 10000
   let numberOfTurns = 10
 

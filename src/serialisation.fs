@@ -1,4 +1,4 @@
-namespace Manacurve.Api.Serialisation
+namespace Manacurve
 
 open System
 open System.Collections.Generic
