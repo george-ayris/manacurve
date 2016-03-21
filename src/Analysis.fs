@@ -1,5 +1,6 @@
 namespace Manacurve
 
+open Lands
 open Domain
 
 module Analysis =
@@ -8,7 +9,7 @@ module Analysis =
   let numberOfTurns = 10
 
   let simulateGames deck =
-    let landsInPlay = (fun (s : PlayerState) -> s.lands) >> numberOfLandsByColour
+    let landsInPlay = (fun (s : PlayerState) -> s.lands) >> amountOfManaByColour
     let deckToLandsInPlay = deckToPlayedGame numberOfTurns >> List.map landsInPlay
 
     List.replicate simulationCount deck

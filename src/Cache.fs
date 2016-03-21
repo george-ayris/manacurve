@@ -5,6 +5,7 @@ open Logary
 open ServiceStack.Redis
 open Domain
 open Analysis
+open ApiTypes
 
 module Cache =
 
@@ -16,14 +17,22 @@ module Cache =
 
   let logger = Logging.getLoggerByName "Manacurve"
 
-  let encodeLandColours (l : DeckLandQuantities) = l.colour1 * 10000 + l.colour2 * 100 + l.colour3
-  let simulationKey n = "simulation:" + (sprintf "%06i" n)
-  let averagesKey n = simulationKey n + ":averages"
-  let mostCommonLandsKey n = simulationKey n + ":mostcommon"
-  let otherKey key n =
-    if key = (averagesKey n)
-    then mostCommonLandsKey n
-    else averagesKey n
+  let encodeLandColours (l : DeckDescription) =
+    sprintf "%02i%02i%02i%02i%02i%02i"
+      l.colour1
+      l.colour2
+      l.colour3
+      l.colour1Colour2
+      l.colour1Colour3
+      l.colour2Colour3
+  let stringifyUrlParam (n : int) = sprintf "%012i" n
+  let simulationKey s = "simulation:" + s
+  let averagesKey s = simulationKey s + ":averages"
+  let mostCommonLandsKey s = simulationKey s + ":mostcommon"
+  let otherKey key s =
+    if key = (averagesKey s)
+    then mostCommonLandsKey s
+    else averagesKey s
 
   let redis() = new RedisClient(redisUrl)
 
@@ -46,6 +55,7 @@ module Cache =
       LogLine.info ("Simulation - cache hit for " + key) |> logger.Log
 
   let checkSimulationCacheAndReact keyFunction valueFunction n =
+    LogLine.info ("Checking simulation cache for " + n) |> logger.Log
     let r = redis()
     let key = keyFunction n
 
@@ -76,8 +86,8 @@ module Cache =
       else
         None
 
-  let averagesCheckCacheAndReact =
-    checkSimulationCacheAndReact averagesKey averageLandsPerTurn
+  let averagesCheckCacheAndReact n =
+    checkSimulationCacheAndReact averagesKey averageLandsPerTurn (stringifyUrlParam n)
 
   let mostCommonLandsCheckCacheAndReact n =
-    checkSimulationCacheAndReact mostCommonLandsKey mostCommonLandScenariosPerTurn n
+    checkSimulationCacheAndReact mostCommonLandsKey mostCommonLandScenariosPerTurn (stringifyUrlParam n)

@@ -1,6 +1,7 @@
 namespace Manacurve
 
 open ListHelpers
+open Lands
 
 module Domain =
   let deckSize = 60
@@ -8,46 +9,23 @@ module Domain =
 
   let createPlayerState deck = {hand=[]; deck=deck; lands=[]}
 
-  let createDeck landQuantities =
-    let lands1 = List.replicate landQuantities.colour1 (Land Colour1)
-    let lands2 = List.replicate landQuantities.colour2 (Land Colour2)
-    let lands3 = List.replicate landQuantities.colour3 (Land Colour3)
-    let nonLandQuantity = (deckSize - landQuantities.colour1 - landQuantities.colour2 - landQuantities.colour3)
+  let createDeck (x : DeckDescription) =
+    let l = [x.colour1;        x.colour2;        x.colour3;
+             x.colour1Colour2; x.colour1Colour3; x.colour2Colour3]
+    let lands =
+      [Land (BasicLand Colour1);
+       Land (BasicLand Colour2);
+       Land (BasicLand Colour3);
+       Land (DualLand (Colour1,Colour2));
+       Land (DualLand (Colour1,Colour3));
+       Land (DualLand (Colour2,Colour3));]
+      |> List.map2 List.replicate l
+      |> List.concat
+
+    let nonLandQuantity = deckSize - List.sum l
     let nonLands = List.replicate nonLandQuantity NonLand
-    lands1 @ lands2 @ lands3 @ nonLands
 
-  let isALand = function
-    | (Land _) -> true
-    | NonLand -> false
-
-  let numberOfLands cards = (List.filter isALand cards).Length
-
-  let isColour1 = function
-    | Land(c) -> match c with
-                  | Colour1 -> true
-                  | Colour2 -> false
-                  | Colour3 -> false
-    | NonLand -> false
-
-  let isColour2 = function
-    | Land(c) -> match c with
-                  | Colour1 -> false
-                  | Colour2 -> true
-                  | Colour3 -> false
-    | NonLand -> false
-
-  let isColour3 = function
-    | Land(c) -> match c with
-                  | Colour1 -> false
-                  | Colour2 -> false
-                  | Colour3 -> true
-    | NonLand -> false
-
-  let numberOfLandsByColour cards =
-    let c1 = (List.filter isColour1 cards).Length
-    let c2 = (List.filter isColour2 cards).Length
-    let c3 = (List.filter isColour3 cards).Length
-    [c1; c2; c3]
+    lands @ nonLands
 
   let landsNotBetween l u hand =
     let landsInHand = numberOfLands hand
