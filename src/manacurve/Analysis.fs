@@ -4,6 +4,9 @@ open Lands
 open Domain
 
 module Analysis =
+  type T = {
+    simulateGames: Card list -> int list list list;
+  }
 
   let simulationCount = 10000
   let numberOfTurns = 10

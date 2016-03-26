@@ -7,3 +7,7 @@ nuget Logary.Adapters.Suave
 nuget Newtonsoft.Json
 nuget ServiceStack.Redis
 nuget Suave 1.0.0
+nuget unquote
+nuget xunit
+nuget xunit.runner.console
+nuget xunit.runners

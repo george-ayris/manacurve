@@ -1,6 +1,7 @@
-#load "src/DomainTypes.fs"
-#load "src/ListHelpers.fs"
-#load "src/Domain.fs"
+#load "api/DomainTypes.fs"
+#load "api/ListHelpers.fs"
+#load "api/Lands.fs"
+#load "api/Domain.fs"
 //#load "src/analysis.fs"
 
 open Manacurve.DomainTypes
