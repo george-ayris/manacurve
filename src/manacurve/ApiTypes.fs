@@ -19,7 +19,8 @@ module ApiTypes =
     redWhite: int;
     greenBlue: int;
   }*)
-
+  type LandScenario = int list
+  type Probability = float
   type AverageLands = { averages: float list list }
-  type LandScenarioAndProbability = { landScenario: int list; probability: float }
+  type LandScenarioAndProbability = { landScenario: LandScenario; probability: Probability }
   type MostCommonLandScenarios = { mostCommonLandScenarios: LandScenarioAndProbability list list }

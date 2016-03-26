@@ -8,6 +8,7 @@ open Analysis
 open ApiTypes
 
 module Cache =
+  let analysis = loadAnalysis 10000 10
 
   let redisUrl =
     let redisUrl = System.Environment.GetEnvironmentVariable("REDIS_URL")
@@ -46,7 +47,7 @@ module Cache =
     then
       LogLine.info ("Simulation - cache miss for " + key) |> logger.Log
       let deck = createDeck landColours
-      let simulationResults = simulateGames deck
+      let simulationResults = analysis.simulateGames deck
       LogLine.info "Simulation - results created" |> logger.Log
       saveValue r (simulationKey (encodeLandColours landColours)) simulationResults
       LogLine.info "Simulation - results saved" |> logger.Log
@@ -87,7 +88,7 @@ module Cache =
         None
 
   let averagesCheckCacheAndReact n =
-    checkSimulationCacheAndReact averagesKey averageLandsPerTurn (stringifyUrlParam n)
+    checkSimulationCacheAndReact averagesKey analysis.averageLandsPerTurn (stringifyUrlParam n)
 
   let mostCommonLandsCheckCacheAndReact n =
-    checkSimulationCacheAndReact mostCommonLandsKey mostCommonLandScenariosPerTurn (stringifyUrlParam n)
+    checkSimulationCacheAndReact mostCommonLandsKey analysis.mostCommonLandScenariosPerTurn (stringifyUrlParam n)
