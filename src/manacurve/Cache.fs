@@ -6,9 +6,10 @@ open ServiceStack.Redis
 open Domain
 open Analysis
 open ApiTypes
+open ListHelpers
 
 module Cache =
-  let analysis = loadAnalysis 10000 10
+  let analysis = loadAnalysis 10000 10 shuffle
 
   let redisUrl =
     let redisUrl = System.Environment.GetEnvironmentVariable("REDIS_URL")

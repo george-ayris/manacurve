@@ -42,14 +42,14 @@ module Domain =
     let hand, deck = List.splitAt n d
     {hand=hand; deck=deck; lands=l}
 
-  let rec shuffleAndDrawHand handSize state =
-    let newState = drawHand handSize {state with deck=shuffle state.deck}
+  let rec shuffleAndDrawHand shuffleF handSize state =
+    let newState = drawHand handSize {state with deck=shuffleF state.deck}
     if shouldMulligan newState.hand
-    then shuffleAndDrawHand (handSize-1) state
+    then shuffleAndDrawHand shuffleF (handSize-1) state
     else newState
 
-  let shuffleAndDrawOpeningHand state =
-    shuffleAndDrawHand startingHandSize state
+  let shuffleAndDrawOpeningHand shuffleF state =
+    shuffleAndDrawHand shuffleF startingHandSize state
 
   let drawCard {hand=h; deck=d; lands=l} =
     match d with
@@ -69,7 +69,7 @@ module Domain =
     |> Seq.take n
     |> Seq.toList
 
-  let deckToPlayedGame numberOfTurns =
+  let deckToPlayedGame shuffleF numberOfTurns =
     createPlayerState >>
-    shuffleAndDrawOpeningHand >>
+    shuffleAndDrawOpeningHand shuffleF >>
     playTurns numberOfTurns

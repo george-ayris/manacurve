@@ -3,6 +3,11 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.17.1)
+    FsCheck (2.2.4)
+      FSharp.Core (>= 3.1.2.5)
+    FsCheck.Xunit (2.2.4)
+      FsCheck (>= 2.2.4)
+      xunit.extensibility.execution (>= 2.1.0 < 2.2.0)
     FSharp.Actor-logary (3.6.1)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
@@ -50,4 +55,3 @@ NUGET
     xunit.extensibility.execution (2.1.0)
       xunit.extensibility.core (2.1.0)
     xunit.runner.console (2.1.0)
-    xunit.runners (2.0.0)

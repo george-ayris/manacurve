@@ -1,3 +1,5 @@
-XUnit
-unquote
-xunit.runner.console
+Xunit
+Xunit.runner.console
+Unquote
+FsCheck
+FsCheck.Xunit

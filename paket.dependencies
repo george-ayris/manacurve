@@ -2,12 +2,13 @@ source https://www.nuget.org/api/v2
 framework >= net45
 
 nuget FAKE
+nuget FsCheck
+nuget FsCheck.Xunit
 nuget Logary
 nuget Logary.Adapters.Suave
 nuget Newtonsoft.Json
 nuget ServiceStack.Redis
 nuget Suave 1.0.0
-nuget unquote
-nuget xunit
-nuget xunit.runner.console
-nuget xunit.runners
+nuget Unquote
+nuget Xunit
+nuget Xunit.runner.console

@@ -11,11 +11,11 @@ module Analysis =
     mostCommonLandScenariosPerTurn: int list list list -> (LandScenario*Probability) list list
   }
 
-  let loadAnalysis simulationCount numberOfTurns =
+  let loadAnalysis simulationCount numberOfTurns shuffleF =
 
     let simulateGames deck =
       let landsInPlay = (fun (s : PlayerState) -> s.lands) >> amountOfManaByColour
-      let deckToLandsInPlay = deckToPlayedGame numberOfTurns >> List.map landsInPlay
+      let deckToLandsInPlay = deckToPlayedGame shuffleF numberOfTurns >> List.map landsInPlay
 
       List.replicate simulationCount deck
       |> List.map deckToLandsInPlay
