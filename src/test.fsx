@@ -1,15 +1,20 @@
-#load "api/DomainTypes.fs"
-#load "api/ListHelpers.fs"
-#load "api/Lands.fs"
-#load "api/Domain.fs"
-//#load "src/analysis.fs"
+#load "manacurve/DomainTypes.fs"
+#load "manacurve/ListHelpers.fs"
+#load "manacurve/Lands.fs"
+#load "manacurve/Domain.fs"
+#load "manacurve/ApiTypes.fs"
+#load "manacurve/Analysis.fs"
 
 open Manacurve.DomainTypes
 open Manacurve.Domain
 open Manacurve.Lands
+open Manacurve.Analysis
 
-let d = createDeck { colour1=1; colour2=1; colour3=1;
-  colour1Colour2=1; colour1Colour3=4; colour2Colour3=1}
+let d = createDeck { colour1=10; colour2=0; colour3=0;
+  colour1Colour2=0; colour1Colour3=0; colour2Colour3=0}
 
-numberOfLands d
-numberOfLandsByColour d
+let shuffle = fun x -> x
+
+let analysis = loadAnalysis 3 6 shuffle
+
+analysis.simulateGames d

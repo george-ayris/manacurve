@@ -8,11 +8,12 @@ module DomainTypes =
   type Card = Land of Land | NonLand
   type PlayerState =
     { hand: Card list; deck: Card list; lands: Card list }
-  type DeckDescription = {
-    colour1: int;
-    colour2: int;
-    colour3: int;
-    colour1Colour2: int;
-    colour1Colour3: int;
-    colour2Colour3: int;
-  }
+  type DeckDescription =
+    { colour1: int;
+      colour2: int;
+      colour3: int;
+      colour1Colour2: int;
+      colour1Colour3: int;
+      colour2Colour3: int; }
+  type ManaInPlay =
+    { colour1: int; colour2: int; colour3: int; turnNumber: int }
