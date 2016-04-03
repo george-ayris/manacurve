@@ -7,7 +7,7 @@ module Domain =
   let deckSize = 60
   let startingHandSize = 7
 
-  let createPlayerState deck = {hand=[]; deck=deck; lands=[]}
+  let createPlayerState deck = {hand=[]; deck=deck; lands=[]; tappedLands=[] }
 
   let createDeck (x : DeckDescription) =
     let l = [x.colour1;        x.colour2;        x.colour3;
@@ -38,9 +38,9 @@ module Domain =
       | 5 -> landsNotBetween 1 4 hand
       | _ -> false
 
-  let drawHand n {hand=h; deck=d; lands=l} =
+  let drawHand n { hand=h; deck=d; lands=l; tappedLands=tl } =
     let hand, deck = List.splitAt n d
-    {hand=hand; deck=deck; lands=l}
+    { hand=hand; deck=deck; lands=l; tappedLands=tl }
 
   let rec shuffleAndDrawHand shuffleF handSize state =
     let newState = drawHand handSize {state with deck=shuffleF state.deck}
@@ -51,18 +51,31 @@ module Domain =
   let shuffleAndDrawOpeningHand shuffleF state =
     shuffleAndDrawHand shuffleF startingHandSize state
 
-  let drawCard {hand=h; deck=d; lands=l} =
+  let drawCard { hand=h; deck=d; lands=l; tappedLands=tl } =
     match d with
-      | card::deck -> {hand=card::h; deck=deck; lands=l}
+      | card::deck -> { hand=card::h; deck=deck; lands=l; tappedLands=tl }
       | []      -> raise (System.ArgumentException("Deck can't be empty"))
 
-  let playLand {hand=h; deck=d; lands=l} =
-    let landToPlay = List.tryFind isALand h
-    match landToPlay with
-      | Some(x) -> {hand=removeFirst isALand h; deck=d; lands=x::l}
-      | None    -> {hand=h; deck=d; lands=l}
+  let untapLands { hand=h; deck=d; lands=l; tappedLands=tl } =
+    { hand=h; deck=d; lands=tl @ l; tappedLands=[] }
 
-  let playTurn = drawCard >> playLand
+  let landToPlay hand =
+    let possibleLand = List.tryFind isALand hand
+    let unwrapLand card =
+      match card with
+        | Land(x) -> Some x
+        | NonLand -> None
+    Option.bind unwrapLand possibleLand
+
+  let playLand { hand=h; deck=d; lands=l; tappedLands=tl } =
+    match landToPlay h with
+      | Some(x) ->
+        match x with
+          | BasicLand(_)  -> { hand=removeFirst isALand h; deck=d; lands=x::l; tappedLands=tl }
+          | DualLand(_,_) -> { hand=removeFirst isALand h; deck=d; lands=l;    tappedLands=x::tl }
+      | None -> { hand=h; deck=d; lands=l; tappedLands=tl }
+
+  let playTurn = drawCard >> untapLands >> playLand
 
   let playTurns n state =
     iterate playTurn state

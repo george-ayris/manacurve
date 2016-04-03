@@ -1,7 +1,8 @@
-F# Web App to analyse mana properties of MTG decks.
+F# Web App to analyse mana properties of MTG decks and a way for me to learn lots of new stuff.
 
 #TODO
-- Tests
+- More backend tests
+- UI Tests
 - Play lands based on what's in Play
 - Add redux to front end
 - Persistent decks

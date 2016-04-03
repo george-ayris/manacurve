@@ -7,7 +7,7 @@ module DomainTypes =
   type Land = BasicLand of ManaColour | DualLand of ManaColour*ManaColour
   type Card = Land of Land | NonLand
   type PlayerState =
-    { hand: Card list; deck: Card list; lands: Card list }
+    { hand: Card list; deck: Card list; lands: Land list; tappedLands: Land list }
   type DeckDescription =
     { colour1: int;
       colour2: int;

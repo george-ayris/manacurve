@@ -18,6 +18,9 @@ module Lands =
 
   let numberOfLands cards = (List.filter isALand cards).Length
 
+  let totalManaInPlay manaInPlay =
+    manaInPlay.colour1 + manaInPlay.colour2 + manaInPlay.colour3
+
   let landsInPlayToManaPossibilities lands  =
     let addColourToManaInPlay c (manaInPlay : ManaInPlay) =
       match c with
@@ -26,15 +29,12 @@ module Lands =
         | Colour3 -> { manaInPlay with colour3 = manaInPlay.colour3 + 1 }
 
 
-    let folder manaPossibilities (card : Card) =
-      match card with
-        | Land(x) ->
-          match x with
-            | BasicLand(c) -> List.map (addColourToManaInPlay c) manaPossibilities
-            | DualLand(c1,c2) ->
-              let c1Option = List.map (addColourToManaInPlay c1) manaPossibilities
-              let c2Option = List.map (addColourToManaInPlay c2) manaPossibilities
-              c1Option @ c2Option
-        | NonLand -> manaPossibilities
+    let folder manaPossibilities l =
+      match l with
+        | BasicLand(c)    -> List.map (addColourToManaInPlay c) manaPossibilities
+        | DualLand(c1,c2) ->
+          let c1Option = List.map (addColourToManaInPlay c1) manaPossibilities
+          let c2Option = List.map (addColourToManaInPlay c2) manaPossibilities
+          c1Option @ c2Option
 
     { manaPossibilities = List.fold folder [{ colour1=0; colour2=0; colour3=0; }] lands }
