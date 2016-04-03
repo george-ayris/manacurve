@@ -10,7 +10,7 @@ open Manacurve.DomainTypes
 
 module SimulateGamesTests =
   let emptyDeck = { colour1=0; colour2=0; colour3=0; colour1Colour2=0; colour1Colour3=0; colour2Colour3=0 }
-  let noManaInPlay (x : ManaInPlay) = x.colour1 = 0 && x.colour2 = 0 && x.colour3 = 0
+  let noManaInPlay (x : ManaInPlay) = x = { colour1=0; colour2=0; colour3=0 }
   let mono60Deck = createDeck { emptyDeck with colour1=60 }
   let fakeShuffle x = x
   let deckSizeMinusStartingHand = Gen.elements [0..53] |> Arb.fromGen
@@ -42,8 +42,9 @@ module SimulateGamesTests =
       let analysis = loadAnalysis simulationCount.Get numberOfTurns fakeShuffle
       let simulations = analysis.simulateGames <| createDeck emptyDeck
       simulations
+        |> Seq.map (fun x -> x.results)
         |> Seq.concat
-        |> Seq.forall (fun x -> noManaInPlay x )
+        |> Seq.forall (fun x -> noManaInPlay x.manaPossibilities.[0] )
         =! true
     )
 
@@ -53,11 +54,15 @@ module SimulateGamesTests =
       let oneSimulationNTurns = loadAnalysis 1 numberOfTurns fakeShuffle
       let simulations = oneSimulationNTurns.simulateGames mono60Deck
       let turnNumber = [1..numberOfTurns] |> List.toSeq
-      let lands = simulations |> Seq.concat
+      let manaInPlay =
+        simulations
+        |> Seq.map (fun x -> x.results) |> Seq.concat
+        |> Seq.map (fun x -> x.manaPossibilities) |> Seq.concat
+
       Seq.forall2
-        (fun turn lands -> turn = lands.colour1)
+        (fun turn mana -> turn = mana.colour1)
         turnNumber
-        lands
+        manaInPlay
       =! true
     )
 
@@ -67,26 +72,42 @@ module SimulateGamesTests =
     Prop.forAll deckSizeMinusStartingHand (fun numberOfLands ->
       let deck = createDeck { emptyDeck with colour1=numberOfLands }
       let simulations = nSimulations53Turns.simulateGames deck
-      let lastTurnLands = simulations |> Seq.concat |> Seq.last
-      lastTurnLands =! { colour1=numberOfLands; colour2=0; colour3=0; turnNumber=53 }
+      let lastTurnManaPossibilities = simulations |> Seq.map (fun x -> x.results) |> Seq.concat |> Seq.last
+      let manaInPlay = lastTurnManaPossibilities.manaPossibilities.[0]
+      manaInPlay =! { colour1=numberOfLands; colour2=0; colour3=0 }
     )
 
   [<Property>]
-  let ``In a mono deck simulation, the output list lengths match the inputs``(simulationCount:PositiveInt) =
+  let ``Mono deck simulations return one mana possibility per turn``(simulationCount:PositiveInt) =
     let upTo60 = Gen.elements [0..60] |> Arb.fromGen
     Prop.forAll upTo60 (fun numberOfLands ->
       Prop.forAll deckSizeMinusStartingHand (fun numberOfTurns ->
         let nSimulationsMTurns = loadAnalysis simulationCount.Get numberOfTurns fakeShuffle
         let deck = createDeck { emptyDeck with colour1=numberOfLands }
         let simulations = nSimulationsMTurns.simulateGames deck
-
-        simulations.Length =! simulationCount.Get
-        Seq.forall
-          (fun (oneSimulation : ManaInPlay list) -> oneSimulation.Length = numberOfTurns)
+        let manaPossibilitiesAcrossAllTurnsAndSimulations =
           simulations
+          |> Seq.map (fun x -> x.results)
+          |> Seq.concat
+
+        Seq.length (manaPossibilitiesAcrossAllTurnsAndSimulations) =! numberOfTurns*simulationCount.Get
+
+        Seq.forall
+          (fun (x : ManaPossibilities) -> x.manaPossibilities.Length = 1)
+          manaPossibilitiesAcrossAllTurnsAndSimulations
         =! true
       )
     )
 
-  //[<Fact>]
-  //let ``Dual coloured lands add an
+  [<Fact>]
+  let ``Dual coloured lands return two mana possibilities on turn 1``() =
+    let oneSimulation2Turns = loadAnalysis 1 2 fakeShuffle
+    let deck = createDeck { emptyDeck with colour1Colour2=1; }
+    let simulations = oneSimulation2Turns.simulateGames deck
+    let turn1Possibilities = simulations.[0].results.[0].manaPossibilities
+
+    turn1Possibilities.Length =! 2
+    (List.filter (fun x -> x = { colour1=1; colour2=0; colour3=0 }) turn1Possibilities)
+      .Length =! 1
+    (List.filter (fun x -> x = { colour1=0; colour2=1; colour3=0 }) turn1Possibilities)
+      .Length =! 1

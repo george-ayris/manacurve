@@ -16,4 +16,8 @@ module DomainTypes =
       colour1Colour3: int;
       colour2Colour3: int; }
   type ManaInPlay =
-    { colour1: int; colour2: int; colour3: int; turnNumber: int }
+    { colour1: int; colour2: int; colour3: int; }
+  type ManaPossibilities =
+    { manaPossibilities: ManaInPlay list }
+  type Simulation =
+    { results: ManaPossibilities list }

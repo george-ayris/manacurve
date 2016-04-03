@@ -5,19 +5,36 @@ module Lands =
     | (Land _) -> true
     | NonLand -> false
 
-  let isColour c x =
-    let isBasicLand = x = (Land (BasicLand c))
-    let isDualLand =
-      match x with
-        | Land(DualLand (c1,c2)) ->
-          c1 = c || c2 = c
-        | _ -> false
-    isBasicLand || isDualLand
+  let isBasicLandOf c x = x = (Land (BasicLand c))
+  let isBasicLand x =
+    match x with
+      | Land(BasicLand(_)) -> true
+      | _ -> false
+
+  let isDualLand x =
+    match x with
+      | Land(DualLand(_,_)) -> true
+      | _ -> false
 
   let numberOfLands cards = (List.filter isALand cards).Length
 
-  let manaInPlay turnNumber cards  =
-    let c1 = (List.filter (isColour Colour1) cards).Length
-    let c2 = (List.filter (isColour Colour2) cards).Length
-    let c3 = (List.filter (isColour Colour3) cards).Length
-    { colour1=c1; colour2=c2; colour3=c3; turnNumber=turnNumber }
+  let landsInPlayToManaPossibilities lands  =
+    let addColourToManaInPlay c (manaInPlay : ManaInPlay) =
+      match c with
+        | Colour1 -> { manaInPlay with colour1 = manaInPlay.colour1 + 1 }
+        | Colour2 -> { manaInPlay with colour2 = manaInPlay.colour2 + 1 }
+        | Colour3 -> { manaInPlay with colour3 = manaInPlay.colour3 + 1 }
+
+
+    let folder manaPossibilities (card : Card) =
+      match card with
+        | Land(x) ->
+          match x with
+            | BasicLand(c) -> List.map (addColourToManaInPlay c) manaPossibilities
+            | DualLand(c1,c2) ->
+              let c1Option = List.map (addColourToManaInPlay c1) manaPossibilities
+              let c2Option = List.map (addColourToManaInPlay c2) manaPossibilities
+              c1Option @ c2Option
+        | NonLand -> manaPossibilities
+
+    { manaPossibilities = List.fold folder [{ colour1=0; colour2=0; colour3=0; }] lands }
