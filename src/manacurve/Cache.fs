@@ -42,6 +42,11 @@ module Cache =
     r.SetValue(key, toJson value)
 
   let checkAnalysisCacheAndReact landColours =
+    let compressSimulationResults (simulations : Simulation list) =
+      let manaPossibilityToIntList xs = List.map (fun x -> [x.colour1; x.colour2; x.colour3]) xs
+      let resultsToIntList xs = List.map (fun x -> manaPossibilityToIntList x.manaPossibilities) xs
+      List.map (fun x -> resultsToIntList x.results) simulations
+
     let r = redis()
     let key = averagesKey (encodeLandColours landColours)
     if not (r.ContainsKey(key))
@@ -49,14 +54,21 @@ module Cache =
       LogLine.info ("Simulation - cache miss for " + key) |> logger.Log
       let deck = createDeck landColours
       let simulationResults = analysis.simulateGames deck
+      let compressedSimulationResults = compressSimulationResults simulationResults
       LogLine.info "Simulation - results created" |> logger.Log
-      saveValue r (simulationKey (encodeLandColours landColours)) simulationResults
+      saveValue r (simulationKey (encodeLandColours landColours)) compressedSimulationResults
       LogLine.info "Simulation - results saved" |> logger.Log
       ()
     else
       LogLine.info ("Simulation - cache hit for " + key) |> logger.Log
 
   let checkSimulationCacheAndReact keyFunction valueFunction n =
+    let uncompressSimulationResults (redisValue : int list list list list) =
+      let constructManaInPlay (xs : int list) = { colour1=xs.[0]; colour2=xs.[1]; colour3=xs.[2] }
+      let constructManaPossibilities xs = { manaPossibilities=List.map constructManaInPlay xs }
+      let constructSimulation xs = { results=List.map constructManaPossibilities xs }
+      List.map constructSimulation redisValue
+
     LogLine.info ("Checking simulation cache for " + n) |> logger.Log
     let r = redis()
     let key = keyFunction n
@@ -82,7 +94,7 @@ module Cache =
       if r.ContainsKey(simulationKey n)
       then
         LogLine.info ("Request - cache miss for " + key) |> logger.Log
-        let value = valueFunction (fromJson (r.GetValue(simulationKey n)))
+        let value = valueFunction <| uncompressSimulationResults (fromJson (r.GetValue(simulationKey n)))
         cache value
         Some value
       else
