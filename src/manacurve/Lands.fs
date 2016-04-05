@@ -24,17 +24,28 @@ module Lands =
   let landsInPlayToManaPossibilities lands  =
     let addColourToManaInPlay c (manaInPlay : ManaInPlay) =
       match c with
-        | Colour1 -> { manaInPlay with colour1 = manaInPlay.colour1 + 1 }
-        | Colour2 -> { manaInPlay with colour2 = manaInPlay.colour2 + 1 }
-        | Colour3 -> { manaInPlay with colour3 = manaInPlay.colour3 + 1 }
+          | Colour1 -> { manaInPlay with colour1 = manaInPlay.colour1 + 1 }
+          | Colour2 -> { manaInPlay with colour2 = manaInPlay.colour2 + 1 }
+          | Colour3 -> { manaInPlay with colour3 = manaInPlay.colour3 + 1 }
 
+    let groupLikeManaInPlay manaInPlays =
+      let groupedByMana =
+        List.groupBy
+          (fun {colour1=c1; colour2=c2; colour3=c3; count=count;} -> (c1,c2,c3))
+          manaInPlays
 
-    let folder manaPossibilities l =
+      let sumCountOfGroups ((c1,c2,c3), listOfLikeMana) =
+        let count = List.sumBy (fun manaInPlay -> manaInPlay.count) listOfLikeMana
+        {colour1=c1; colour2=c2; colour3=c3; count=count }
+
+      List.map sumCountOfGroups groupedByMana
+
+    let folder manaInPlayWithCount l =
       match l with
-        | BasicLand(c)    -> List.map (addColourToManaInPlay c) manaPossibilities
+        | BasicLand(c)    -> List.map (addColourToManaInPlay c) manaInPlayWithCount
         | DualLand(c1,c2) ->
-          let c1Option = List.map (addColourToManaInPlay c1) manaPossibilities
-          let c2Option = List.map (addColourToManaInPlay c2) manaPossibilities
-          c1Option @ c2Option
+          let c1Option = List.map (addColourToManaInPlay c1) manaInPlayWithCount
+          let c2Option = List.map (addColourToManaInPlay c2) manaInPlayWithCount
+          groupLikeManaInPlay <| c1Option @ c2Option
 
-    { manaPossibilities = List.fold folder [{ colour1=0; colour2=0; colour3=0; }] lands }
+    { manaPossibilities = List.fold folder [{ colour1=0; colour2=0; colour3=0; count=1 }] lands }

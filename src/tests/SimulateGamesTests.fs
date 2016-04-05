@@ -11,11 +11,15 @@ open Manacurve.Lands
 
 module SimulateGamesTests =
   let emptyDeck = { colour1=0; colour2=0; colour3=0; colour1Colour2=0; colour1Colour3=0; colour2Colour3=0 }
-  let noManaInPlay = { colour1=0; colour2=0; colour3=0 }
+  let noManaInPlay = { colour1=0; colour2=0; colour3=0; count=1 }
   let mono60Deck = createDeck { emptyDeck with colour1=60 }
   let fakeShuffle x = x
   let deckSizeMinusStartingHand = Gen.elements [0..53] |> Arb.fromGen
-  let twoTo15 = Gen.elements [2..15] |> Arb.fromGen 
+  let twoTo20 = Gen.elements [2..20] |> Arb.fromGen
+
+  let assertListContainsNOf n elem list =
+    test <@ (List.filter (fun x -> x = elem) list).Length = n @>
+  let assertListOnlyContainsOneOf = assertListContainsNOf 1
 
   // This should be written with a custom Arbitrary, which generates valid mana configurations
   [<Property>]
@@ -30,12 +34,12 @@ module SimulateGamesTests =
       let deck = createDeck { colour1=ns.[0];        colour2=ns.[1];        colour3=ns.[2];
                               colour1Colour2=ns.[3]; colour1Colour3=ns.[4]; colour2Colour3=ns.[5] }
 
-      (List.filter (fun x -> x = Land(BasicLand Colour1)) deck).Length =! ns.[0]
-      (List.filter (fun x -> x = Land(BasicLand Colour2)) deck).Length =! ns.[1]
-      (List.filter (fun x -> x = Land(BasicLand Colour3)) deck).Length =! ns.[2]
-      (List.filter (fun x -> x = Land(DualLand (Colour1,Colour2))) deck).Length =! ns.[3]
-      (List.filter (fun x -> x = Land(DualLand (Colour1,Colour3))) deck).Length =! ns.[4]
-      (List.filter (fun x -> x = Land(DualLand (Colour2,Colour3))) deck).Length =! ns.[5]
+      assertListContainsNOf ns.[0] (Land(BasicLand Colour1)) deck
+      assertListContainsNOf ns.[1] (Land(BasicLand Colour2)) deck
+      assertListContainsNOf ns.[2] (Land(BasicLand Colour3)) deck
+      assertListContainsNOf ns.[3] (Land(DualLand (Colour1,Colour2))) deck
+      assertListContainsNOf ns.[4] (Land(DualLand (Colour1,Colour3))) deck
+      assertListContainsNOf ns.[5] (Land(DualLand (Colour2,Colour3))) deck
     )
 
   [<Property>]
@@ -46,8 +50,7 @@ module SimulateGamesTests =
       simulations
         |> Seq.map (fun x -> x.results)
         |> Seq.concat
-        |> Seq.forall (fun x -> x.manaPossibilities.[0] = noManaInPlay)
-        =! true
+        |> Seq.iter (fun x -> test <@ x.manaPossibilities.[0] = noManaInPlay @>)
     )
 
   [<Property>]
@@ -61,11 +64,10 @@ module SimulateGamesTests =
         |> Seq.map (fun x -> x.results) |> Seq.concat
         |> Seq.map (fun x -> x.manaPossibilities) |> Seq.concat
 
-      Seq.forall2
-        (fun turn mana -> turn = mana.colour1)
+      Seq.iter2
+        (fun turn mana -> test <@ turn = mana.colour1 @>)
         turnNumber
         manaInPlay
-      =! true
     )
 
   [<Property>]
@@ -75,8 +77,7 @@ module SimulateGamesTests =
       let deck = createDeck { emptyDeck with colour1=numberOfLands }
       let simulations = nSimulations53Turns.simulateGames deck
       let lastTurnManaPossibilities = simulations |> Seq.map (fun x -> x.results) |> Seq.concat |> Seq.last
-      let manaInPlay = lastTurnManaPossibilities.manaPossibilities.[0]
-      manaInPlay =! { colour1=numberOfLands; colour2=0; colour3=0 }
+      test <@ lastTurnManaPossibilities.manaPossibilities.[0] = { colour1=numberOfLands; colour2=0; colour3=0; count=1 } @>
     )
 
   [<Property>]
@@ -92,12 +93,11 @@ module SimulateGamesTests =
           |> Seq.map (fun x -> x.results)
           |> Seq.concat
 
-        Seq.length (manaPossibilitiesAcrossAllTurnsAndSimulations) =! numberOfTurns*simulationCount.Get
+        test <@ Seq.length (manaPossibilitiesAcrossAllTurnsAndSimulations) = numberOfTurns*simulationCount.Get @>
 
-        Seq.forall
-          (fun (x : ManaPossibilities) -> x.manaPossibilities.Length = 1)
+        Seq.iter
+          (fun (x : ManaPossibilities) -> test <@ x.manaPossibilities.Length = 1 @>)
           manaPossibilitiesAcrossAllTurnsAndSimulations
-        =! true
       )
     )
 
@@ -108,45 +108,43 @@ module SimulateGamesTests =
     let simulations = oneSimulation2Turns.simulateGames deck
     let turn1Possibilities = simulations.[0].results.[0].manaPossibilities
 
-    turn1Possibilities.Length =! 1
-    turn1Possibilities.[0] =! noManaInPlay
+    test <@ turn1Possibilities.Length = 1 @>
+    test <@ turn1Possibilities.[0] = noManaInPlay @>
 
     let turn2Possibilities = simulations.[0].results.[1].manaPossibilities
 
-    turn2Possibilities.Length =! 2
-    (List.filter (fun x -> x = { colour1=1; colour2=0; colour3=0 }) turn2Possibilities)
-      .Length =! 1
-    (List.filter (fun x -> x = { colour1=0; colour2=1; colour3=0 }) turn2Possibilities)
-      .Length =! 1
+    test <@ turn2Possibilities.Length = 2 @>
+    assertListOnlyContainsOneOf { colour1=1; colour2=0; colour3=0; count=1 } turn2Possibilities
+    assertListOnlyContainsOneOf { colour1=0; colour2=1; colour3=0; count=1 } turn2Possibilities
 
     let turn3Possibilities = simulations.[0].results.[2].manaPossibilities
 
-    turn3Possibilities.Length =! 4
-    (List.filter (fun x -> x = { colour1=2; colour2=0; colour3=0 }) turn3Possibilities)
-      .Length =! 1
-    (List.filter (fun x -> x = { colour1=0; colour2=2; colour3=0 }) turn3Possibilities)
-      .Length =! 1
-    (List.filter (fun x -> x = { colour1=1; colour2=1; colour3=0 }) turn3Possibilities)
-      .Length =! 2
+    test <@ turn3Possibilities.Length = 3 @>
+    assertListOnlyContainsOneOf { colour1=2; colour2=0; colour3=0; count=1 } turn3Possibilities
+    assertListOnlyContainsOneOf { colour1=0; colour2=2; colour3=0; count=1 } turn3Possibilities
+    assertListOnlyContainsOneOf { colour1=1; colour2=1; colour3=0; count=2 } turn3Possibilities
 
   [<Property>]
-  let ``Dual coloured lands return one empty mana possibility on turn 1, two mana possibilities on turn 2 and double every turn afterwards``() =
-    Prop.forAll twoTo15 (fun numberOfTurns ->
+  let ``Dual coloured lands follow a binomial expansion with their mana possibilities``() =
+    let factorial (n : bigint) : bigint =
+      if n = bigint(0)
+      then bigint(1)
+      else [bigint(1)..n] |> List.reduce (*)
+    let coefficient n k = (factorial n) / ((factorial (n - k)) * (factorial k))
+    let binomial n = [0..n] |> List.map (fun x -> int32 (coefficient (bigint n) (bigint x)))
+
+    Prop.forAll twoTo20 (fun numberOfTurns ->
       let oneSimulationNTurns = loadAnalysis 1 numberOfTurns fakeShuffle
       let deck = createDeck { emptyDeck with colour1Colour2=60; }
       let simulations = oneSimulationNTurns.simulateGames deck
-      let turn1Possibilities = simulations.[0].results.[0].manaPossibilities
 
-      turn1Possibilities.Length =! 1
-      turn1Possibilities.[0] =! noManaInPlay
+      let assertAgainstLengthAndContents n (x : ManaPossibilities) =
+        let binomialCoeffs = binomial n
+        test <@ x.manaPossibilities.Length = binomialCoeffs.Length @>
+        List.iteri
+          (fun i binomialCoeff ->
+            assertListOnlyContainsOneOf { colour1=i; colour2=(n-i); colour3=0; count=binomialCoeff } x.manaPossibilities)
+            binomialCoeffs
 
-      let greaterThanTurn1Possibilities = List.tail (simulations.[0].results)
-      let turnNumber = [2..numberOfTurns] |> List.toSeq
-
-      Seq.forall2
-          (fun turnNumber (x : ManaPossibilities) ->
-            x.manaPossibilities.Length = Operators.pown 2 (turnNumber-1))
-          turnNumber
-          greaterThanTurn1Possibilities
-      =! true
+      Seq.iteri assertAgainstLengthAndContents simulations.[0].results
     )

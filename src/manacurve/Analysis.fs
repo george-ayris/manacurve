@@ -35,16 +35,14 @@ module Analysis =
 
     let averageLandsPerTurn (simulations : Simulation list) =
       let combineManaPossibilitiesIntoSingleAverage (x : ManaPossibilities) =
-        let folder acc elem =
-          let runningTotal = fst acc
-          let count = snd acc
-          ({ colour1 = runningTotal.colour1 + elem.colour1;
-             colour2 = runningTotal.colour2 + elem.colour2;
-             colour3 = runningTotal.colour3 + elem.colour3; }
-          , count + 1)
+        let folder runningTotal elem =
+          { colour1 = runningTotal.colour1 + (elem.colour1*elem.count);
+            colour2 = runningTotal.colour2 + (elem.colour2*elem.count);
+            colour3 = runningTotal.colour3 + (elem.colour3*elem.count);
+            count   = runningTotal.count   + elem.count; }
 
-        let totalledManaInPlay = List.fold folder ({colour1=0; colour2=0; colour3=0},0) x.manaPossibilities
-        let average field = float (field (fst totalledManaInPlay)) / float (snd totalledManaInPlay)
+        let totalledManaInPlay = List.fold folder {colour1=0; colour2=0; colour3=0; count=0} x.manaPossibilities
+        let average field = float (field totalledManaInPlay) / float (totalledManaInPlay.count)
         [ average (fun x -> x.colour1);
           average (fun x -> x.colour2);
           average (fun x -> x.colour3) ]
@@ -58,7 +56,10 @@ module Analysis =
 
     let mostCommonLandScenariosPerTurn (simulations : Simulation list) =
       let manaPossibilitiesToLandScenarioList (x : ManaPossibilities) =
-        List.map (fun y -> [y.colour1; y.colour2; y.colour3]) x.manaPossibilities
+        x.manaPossibilities
+        |> List.map (fun y -> List.replicate y.count [y.colour1; y.colour2; y.colour3])
+        |> Seq.concat
+        |> Seq.toList
 
       let probabilityOfLand xs =
           let count = Seq.length xs |> float

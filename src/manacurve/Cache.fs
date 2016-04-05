@@ -43,7 +43,7 @@ module Cache =
 
   let checkAnalysisCacheAndReact landColours =
     let compressSimulationResults (simulations : Simulation list) =
-      let manaPossibilityToIntList xs = List.map (fun x -> [x.colour1; x.colour2; x.colour3]) xs
+      let manaPossibilityToIntList xs = List.map (fun x -> [x.colour1; x.colour2; x.colour3; x.count]) xs
       let resultsToIntList xs = List.map (fun x -> manaPossibilityToIntList x.manaPossibilities) xs
       List.map (fun x -> resultsToIntList x.results) simulations
 
@@ -64,7 +64,7 @@ module Cache =
 
   let checkSimulationCacheAndReact keyFunction valueFunction n =
     let uncompressSimulationResults (redisValue : int list list list list) =
-      let constructManaInPlay (xs : int list) = { colour1=xs.[0]; colour2=xs.[1]; colour3=xs.[2] }
+      let constructManaInPlay (xs : int list) = { colour1=xs.[0]; colour2=xs.[1]; colour3=xs.[2]; count=xs.[3] }
       let constructManaPossibilities xs = { manaPossibilities=List.map constructManaInPlay xs }
       let constructSimulation xs = { results=List.map constructManaPossibilities xs }
       List.map constructSimulation redisValue
