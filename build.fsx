@@ -35,6 +35,7 @@ Target "Build" (fun _ ->
 Target "BuildTests" (fun _ ->
     MSBuildDebug testDir "Build" testReferences
         |> Log "TestBuild-Output: "
+    Copy testDir ["src/tests/xunit.runner.json"]
 )
 
 Target "RunTests" (fun _ ->
