@@ -25,6 +25,5 @@ let factorial (n : int64) : int64 =
   else [1L..n] |> List.reduce (*)
 let coefficient n k = (factorial n) / ((factorial (n - k)) * (factorial k))
 let binomial n = [0..n] |> List.map (fun x -> int32 (coefficient (int64 n) (int64 x)))
-factorial 13L
-coefficient 13 1
+
 binomial 13

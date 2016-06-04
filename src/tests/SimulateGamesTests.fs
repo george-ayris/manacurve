@@ -148,3 +148,20 @@ module SimulateGamesTests =
 
       Seq.iteri assertAgainstLengthAndContents simulations.[0].results
     )
+
+  [<Fact>]
+  let ``Play mana in an even fashion``() =
+    let oneSimulation6Turns = loadAnalysis 1 6 fakeShuffle
+    let deck = createDeck { emptyDeck with colour1=3; colour2=3; }
+    let simulations = oneSimulation6Turns.simulateGames deck
+
+    let manaPossibiltiies = simulations.[0].results
+    let turn1 = manaPossibiltiies.[0]
+    test <@ turn1.manaPossibilities.Length = 1 @>
+    assertListOnlyContainsOneOf
+      turn1.manaPossibilities.[0]
+      [{colour1=1; colour2=0; colour3=0; count=1; }
+       {colour1=0; colour2=1; colour3=0; count=1; }]
+
+    let turn2 = manaPossibiltiies.[1]
+    assertListOnlyContainsOneOf {colour1=1; colour2=1; colour3=0; count=1; } turn2.manaPossibilities

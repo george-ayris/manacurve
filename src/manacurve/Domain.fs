@@ -59,20 +59,40 @@ module Domain =
   let untapLands { hand=h; deck=d; lands=l; tappedLands=tl } =
     { hand=h; deck=d; lands=tl @ l; tappedLands=[] }
 
-  let landToPlay hand =
-    let possibleLand = List.tryFind isALand hand
-    let unwrapLand card =
+  let landToPlay hand landsAlreadyInPlay =
+    let preferProposedLand proposedLand chosenLand =
+      let numberOfEachColour = numberOfEachColourInPlay landsAlreadyInPlay
+      let proposedLandMinColourNumber = List.min (numberOfEachColour proposedLand)
+      let chosenLandMinColourNumber = List.min (numberOfEachColour chosenLand)
+
+      if proposedLandMinColourNumber = chosenLandMinColourNumber
+      then
+        match (proposedLand, chosenLand) with
+          | (DualLand(_,_), BasicLand(_)) -> true
+          | _ -> false
+      else if proposedLandMinColourNumber < chosenLandMinColourNumber
+      then true
+      else false
+
+    let findLandWithLeastInPlay chosenLandOption card =
       match card with
-        | Land(x) -> Some x
-        | NonLand -> None
-    Option.bind unwrapLand possibleLand
+        | NonLand -> chosenLandOption
+        | Land(proposedLand) ->
+          match chosenLandOption with
+            | None -> Some proposedLand
+            | Some chosenLand ->
+              if preferProposedLand proposedLand chosenLand
+              then Some proposedLand
+              else chosenLandOption
+
+    List.fold findLandWithLeastInPlay None hand
 
   let playLand { hand=h; deck=d; lands=l; tappedLands=tl } =
-    match landToPlay h with
+    match landToPlay h (l@tl) with
       | Some(x) ->
         match x with
-          | BasicLand(_)  -> { hand=removeFirst isALand h; deck=d; lands=x::l; tappedLands=tl }
-          | DualLand(_,_) -> { hand=removeFirst isALand h; deck=d; lands=l;    tappedLands=x::tl }
+          | BasicLand(_)  -> { hand=removeFirst ((=) (Land(x))) h; deck=d; lands=x::l; tappedLands=tl }
+          | DualLand(_,_) -> { hand=removeFirst ((=) (Land(x))) h; deck=d; lands=l;    tappedLands=x::tl }
       | None -> { hand=h; deck=d; lands=l; tappedLands=tl }
 
   let playTurn = drawCard >> untapLands >> playLand

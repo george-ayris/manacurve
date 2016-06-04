@@ -18,6 +18,21 @@ module Lands =
 
   let numberOfLands cards = (List.filter isALand cards).Length
 
+  let numberOfEachColourInPlay landsInPlay land' =
+    let colours =
+      match land' with
+        | BasicLand(c) -> [c]
+        | DualLand(c1,c2) -> [c1;c2]
+
+    let hasColour (colour : ManaColour) l =
+      match l with
+        | BasicLand(c) -> c = colour
+        | DualLand(c1,c2) -> c1 = colour || c2 = colour
+
+    let numberOfLandsWithColour colour =
+      landsInPlay |> List.filter (fun x -> hasColour colour x) |> List.length
+    List.map numberOfLandsWithColour colours
+
   let totalManaInPlay manaInPlay =
     manaInPlay.colour1 + manaInPlay.colour2 + manaInPlay.colour3
 
