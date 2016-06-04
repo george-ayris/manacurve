@@ -21,14 +21,14 @@ module Api =
     OK ""
 
   let averageLands n =
-    LogLine.info ("Request started - average lands " + n.ToString()) |> logger.Log
+    LogLine.info ("Request started - average lands " + n) |> logger.Log
     let averages = averagesCheckCacheAndReact n
     match averages with
       | Some a -> JSON { averages = a }
       | None -> NOT_FOUND "Simulation not done"
 
   let mostCommonLands n =
-    LogLine.info ("Request started - most common lands " + n.ToString()) |> logger.Log
+    LogLine.info ("Request started - most common lands " + n) |> logger.Log
     let mostCommonLands = mostCommonLandsCheckCacheAndReact n
     match mostCommonLands with
       | Some x ->
@@ -40,7 +40,7 @@ module Api =
     choose
       [ path "/deck" >=> POST >=>
           request (getResourceFromReq >> createDeckSimulations)
-        pathScan "/deck/%d/averages" (fun d ->
+        pathScan "/deck/%s/averages" (fun d ->
             GET >=> averageLands d)
-        pathScan "/deck/%d/mostcommon" (fun d ->
+        pathScan "/deck/%s/mostcommon" (fun d ->
             GET >=> mostCommonLands d) ]

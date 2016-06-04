@@ -13,7 +13,7 @@ function numberOfLandsToDeckId(numberOfLandsByColour) {
     var numberOfCurrentColour = zeroPad(numberOfLandsByColour[colour]);
     return acc + numberOfCurrentColour;
   };
-  return Constants.Colours.reduce(createDeckId, "")
+  return Constants.Colours.reduce(createDeckId, "") + "000000"
 }
 
 var apiCache = {};

@@ -27,7 +27,6 @@ module Cache =
       l.colour1Colour2
       l.colour1Colour3
       l.colour2Colour3
-  let stringifyUrlParam (n : int) = sprintf "%012i" n
   let simulationKey s = "simulation:" + s
   let averagesKey s = simulationKey s + ":averages"
   let mostCommonLandsKey s = simulationKey s + ":mostcommon"
@@ -101,7 +100,7 @@ module Cache =
         None
 
   let averagesCheckCacheAndReact n =
-    checkSimulationCacheAndReact averagesKey analysis.averageLandsPerTurn (stringifyUrlParam n)
+    checkSimulationCacheAndReact averagesKey analysis.averageLandsPerTurn n
 
   let mostCommonLandsCheckCacheAndReact n =
-    checkSimulationCacheAndReact mostCommonLandsKey analysis.mostCommonLandScenariosPerTurn (stringifyUrlParam n)
+    checkSimulationCacheAndReact mostCommonLandsKey analysis.mostCommonLandScenariosPerTurn n
